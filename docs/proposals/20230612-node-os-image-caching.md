@@ -3,9 +3,11 @@ title: Proposal Template
 authors:
   - "@bennycortese"
 reviewers:
-
-creation-date: yyyy-mm-dd
-last-updated: yyyy-mm-dd
+  - "@nojnhuh"
+  - "@CecileRobertMichon"
+  - "@jackfrancis"
+creation-date: 2023-06-12
+last-updated: 2023-06-12
 
 status: provisional|experimental|implementable|implemented|deferred|rejected|withdrawn|replaced
 see-also:
