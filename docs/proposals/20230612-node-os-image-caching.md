@@ -10,7 +10,7 @@ reviewers:
 creation-date: 2023-06-12
 last-updated: 2023-06-12
 
-status: provisional|experimental|implementable|implemented|deferred|rejected|withdrawn|replaced
+status: provisional
 see-also:
   - "/docs/proposals/20190101-we-heard-you-like-proposals.md"
   - "/docs/proposals/20190102-everyone-gets-a-proposal.md"
