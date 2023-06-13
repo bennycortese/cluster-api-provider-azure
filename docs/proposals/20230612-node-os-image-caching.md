@@ -1,5 +1,5 @@
 ---
-title: Proposal Template
+title: Integrate Node OS Image caching with CAPZ
 authors:
   - "@bennycortese"
 reviewers:
