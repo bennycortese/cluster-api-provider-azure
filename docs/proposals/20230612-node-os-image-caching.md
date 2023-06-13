@@ -125,7 +125,7 @@ The plan is to modify the existing Controllers with the Node Prototype Pattern a
 
 An operator will be able to decide to turn the feature on or off with a flag on creation of a cluster, and then can update the AzureMachineTemplate and AzureMachinePool to customize how long they want the caching interval to be.
 
-Every time that amount of time has passed, it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a shared image gallery image, delete the snapshot, and then configure the AzureMachineTemplate specs to use that shared image gallery image.
+The controller will maintain a timestamp, and when the current time is the chosen interval ahead or more, the controller will perform the caching. When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a shared image gallery image, delete the snapshot, and then configure the AzureMachineTemplate specs to use that shared image gallery image. After, it will store the current time as its timestamp.
 
 	As for why the healthy node has to be shut down while creating a snapshot of it, if it isn’t shut down first then pods can be scheduled as the snapshot is taken which will cause some dangerous states in terms of how it exists after being utilized by the AzureMachineTemplates.
 
