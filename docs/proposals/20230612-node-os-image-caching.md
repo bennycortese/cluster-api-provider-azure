@@ -211,7 +211,7 @@ stable - The feature has been used for a while and is widely acceptable as well 
 
 ### Version Skew Strategy [optional]
 
-The feature itself should not depend significantly on the version of CAPI and will be backwards compatible with old versions of CAPZ since it will be a toggleable feature, so if there is a drift in CAPI and CAPZ versions the functionality should stay the same without breaking anything.
+The feature itself should not depend significantly on the version of CAPI and will be backwards compatible with old versions of CAPZ since it will be a toggleable feature. If there is a drift in CAPI and CAPZ versions, the functionality should stay the same without breaking anything.
 
 ## Implementation History
 
