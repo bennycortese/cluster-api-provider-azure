@@ -123,7 +123,7 @@ None currently known to be needed
 
 The plan is to modify the existing Controllers with the Node Prototype Pattern as desired. These controller additions can be added to AzureMachine Controller and AzureMachinePool Controller.
 
-An operator will be able to decide to turn the feature on or off with a flag on creation of a cluster, and then can alter the YAML file for AzureMachineTemplate and AzureMachinePool to customize how long they want the caching interval to be.
+An operator will be able to decide to turn the feature on or off with a flag on creation of a cluster, and then can update the AzureMachineTemplate and AzureMachinePool to customize how long they want the caching interval to be.
 
 Every time that amount of time has passed, it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a shared image gallery image, delete the snapshot, and then configure the AzureMachineTemplate specs to use that shared image gallery image.
 
