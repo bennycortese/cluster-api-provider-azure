@@ -56,7 +56,7 @@ Integrate Node OS Image caching with CAPZ
 
 ## Glossary
 
-Node Prototype Pattern - Where we take a known good/working OS snapshot and make a “prototype” upon which all future node OS’ images are based. Citation: Skyman VMSS "Prototype Pattern" - Speech Wiki
+Node Prototype Pattern - Where we take a known good/working OS snapshot and make a “prototype” upon which all future node OS’ images are based.
 
 Warm nodes - The concept of keeping up extraneous and unused nodes to prevent having to wait for patches or security updates, thus allowing you to have those nodes ready when more users try to use your service without the wait times.
 
