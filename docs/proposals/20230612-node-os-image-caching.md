@@ -197,7 +197,7 @@ For architectural details of where else the code could exist, the controller sec
 
 ## Upgrade Strategy
 
-Turning off or on the feature is all that is required to keep previous behavior or make use of the enhancement. No backwards compatibility will be broken, all this feature request will do is add a new controller which can be utilized or not as desired.
+Turning off or on the feature for a particular operator is done with them setting an environment variable and that is all that is required to keep previous behavior or make use of the enhancement. No backwards compatibility will be broken, all this feature request will do is change previous controllers and add optional fields to AzureMachinePool and AzureMachineTemplate which can be utilized or not as desired.
 
 ## Additional Details
 
