@@ -127,7 +127,13 @@ None currently known to be needed
 
 The plan is to modify the existing Controllers with the Node Prototype Pattern as desired. These controller additions can be added to AzureMachine Controller and AzureMachinePool Controller.
 
-An operator will be able to decide to turn the feature on or off with a flag on creation of a cluster, and then can update the AzureMachineTemplate and AzureMachinePool to customize how long they want the caching interval to be.
+An operator will be able to decide to turn the feature on or off with an environment variable on creation of a cluster, and then can update the AzureMachineTemplate and AzureMachinePool to customize how long they want the caching interval to be (see the yaml files below in this section for the caching interval).
+
+Example of the enviornment variable being turned on:
+
+```
+export AZURE_OS_CACHING=true
+```
 
 The controller will maintain a timestamp, and when the current time is the chosen interval ahead or more, the controller will perform the caching. When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a shared image gallery image, delete the snapshot, and then configure the AzureMachineTemplate specs to use that shared image gallery image. After, it will store the current time as its timestamp.
 
@@ -177,7 +183,7 @@ Example risks:
 1. A bad snapshot is taken, and we will mitigate this risk by having a rollback if a bad snapshot is detected as taken and have prevention techniques in place to detect if the snapshot is bad before taking it.
 1. A bad security patch or update might have been applied to a user’s node that they don’t want to be applied to future nodes. To mitigate this risk, we will make it easy for users to turn this feature off, and if they fix it on their original node the snapshot will be taken of that node instead.
 
-The UX will mostly be impactful towards operators and members of the CAPZ community will test these changes and give feedback on them. Security will also likely follow in terms of how it gets reviewed, but no major security problems should be possible from this change. For folks who work outside the SIG or subproject, they should hopefully have faster horizontal scaling without needing to directly do anything outside of maybe a feature flag just as a collateral effect.
+The UX will mostly be impactful towards operators and members of the CAPZ community will test these changes and give feedback on them. Security will also likely follow in terms of how it gets reviewed, but no major security problems should be possible from this change. For folks who work outside the SIG or subproject, they should hopefully have faster horizontal scaling without needing to directly do anything outside of setting an environment variable on cluster creation or updating their AzureMachinePools and AzureMachineTemplates.
 
 
 ## Alternatives
@@ -204,7 +210,7 @@ It should be tested primarily in isolation as other components shouldn’t affec
 
 ### Graduation Criteria [optional]
 
-alpha - The feature is initially constructed and toggleable with a flag
+alpha - The feature is initially constructed and toggleable with an environment variable
 beta - The feature has e2e tests implemented and is more integrated and seamless with the project
 stable - The feature has been used for a while and is widely acceptable as well as reliable and will now be enabled by default.
 
