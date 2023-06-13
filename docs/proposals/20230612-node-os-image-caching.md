@@ -72,6 +72,10 @@ A controller will be added to CAPZ which caches the Nodes’ OS image on a regul
 
 This feature will help prevent the increasing startup times of new nodes as security updates/patches accumulate and pull times of these patches increase. As a result, users will have faster horizontal scaling and require fewer warm nodes to avoid this problem, especially since the new nodes will have the container images of the applications it will run pre-cached so pods will run quicker when scheduled. This feature will also help users have better security compliance as new nodes will already be compliant instead of needing to patch.
 
+#### Credits
+
+A big thank you to Jack Francis, Michael Sinz, and Amr Hanafi for their work on the Kamino project that used a similar Prototype Pattern with AKSEngine which inspired this feature request: https://github.com/jackfrancis/kamino
+
 ### Goals
 
 1. A solution using the Node Prototype pattern which cache’s nodes’ OS image on a regular interval and replaces it as a new ‘golden image’.
@@ -102,10 +106,6 @@ As an operator I would like to be able to have my node’s OS image cache for th
 #### As an operator, I want to be able to have pods run quicker when scheduled
 
 As a cluster operator I want to bring up new nodes that already have the container images of the applications it will run pre-cached so that pods start running quicker when scheduled.
-
-#### Credits
-
-A big thank you to Jack Francis, Michael Sinz, and Amr Hanafi for their work on the Kamino project that used a similar Prototype Pattern with AKSEngine which inspired this feature request: https://github.com/jackfrancis/kamino
 
 ### Requirements (Optional)
 
