@@ -121,9 +121,7 @@ None currently known to be needed
 
 ### Implementation Details/Notes/Constraints
 
-The plan is to modify the existing Controllers with the Node Prototype Pattern as desired.
-
-These controller additions can be added to azuremachine_controller.go because that is where AzureMachines are being controlled and azuremachinepool_controller.go since that is where the AzureMachinePools are being controlled.
+The plan is to modify the existing Controllers with the Node Prototype Pattern as desired. These controller additions can be added to AzureMachine Controller and AzureMachinePool Controller.
 
 An operator will be able to decide to turn the feature on or off with a flag on creation of a cluster, and then can alter the YAML file for AzureMachineTemplate and AzureMachinePool to customize how long they want the caching interval to be.
 
