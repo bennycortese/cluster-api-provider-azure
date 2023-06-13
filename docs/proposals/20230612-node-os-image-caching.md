@@ -173,7 +173,7 @@ spec:
 ![Figure 1](./images/node-os-image-cache.png)
 
 ### Security Model
-This proposal requires CAPZ to have write permissions for azureMachineTemplates in order to properly update the nodes’ OS image on the spec. Go has a library called time and time.ParseDuration will be used to parse the time interval provided by an operator instead of using regular expressions. Denial of service attacks will be protected against by having an update system which doesn’t need to be atomic, if part of the caching is complete there is no risk in the update not finishing since the spec update will happen at once. No sensitive data is being stored in a secret. 
+This proposal requires CAPZ to have write permissions for azureMachineTemplates in order to properly update the nodes’ OS image on the spec. Go has a library called time and time.ParseDuration will be used to parse the time interval provided by an operator instead of using regular expressions. Denial of service attacks will be protected against by having an update system which doesn’t need to be atomic. If part of the caching is complete there is no risk in the update not finishing since the spec update will happen at once. No sensitive data is being stored in a secret.
 
 ### Risks and Mitigations
 
