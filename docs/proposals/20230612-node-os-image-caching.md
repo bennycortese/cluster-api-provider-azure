@@ -148,7 +148,7 @@ spec:
   template:
     spec:
       nodeCachingMode:
-        interval: 1 day
+        interval: 24h
 ```
 
 Example AzureMachinePool yaml:
@@ -161,7 +161,7 @@ metadata:
 spec:
   template:
     nodeCachingMode:
-      interval: 1 day
+      interval: 24h
 ```
 
 A model scenario would be an operator spinning up a CAPZ cluster and having this feature be able to be toggled on or off. If it was toggled on, then as the months passed and more security updates and patches needed to be applied to the operator’s node OS image, these changes would be cached on a regular interval and the operator would no longer have to wait for these changes to apply on new node creations. This would help prevent warm nodes and overprovisioning as well as allowing the operator to have faster horizontal scaling.
