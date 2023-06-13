@@ -60,6 +60,10 @@ Node Prototype Pattern - Where we take a known good/working OS snapshot and make
 
 Warm nodes - The concept of keeping up extraneous and unused nodes to prevent having to wait for patches or security updates, thus allowing you to have those nodes ready when more users try to use your service without the wait times.
 
+Shared Image Gallery - A repository that is an Azure Resource for managing and sharing images
+
+Snapshot - A static copy of the image at the point in time that it is taken
+
 ## Summary
 
 A controller will be added to CAPZ which caches the Nodes’ OS image on a regular interval and updates the model to use that image for future scale outs. This feature request will allow for faster horizontal scaling and will help prevent security alerts from new nodes which immediately need a security update as those new nodes will now come with the security update already installed. This feature will also help prevent users from needing to spin up warm nodes due to this faster horizontal scaling.
