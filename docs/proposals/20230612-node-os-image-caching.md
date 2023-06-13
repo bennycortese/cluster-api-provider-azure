@@ -12,12 +12,7 @@ last-updated: 2023-06-12
 
 status: provisional
 see-also:
-  - "/docs/proposals/20190101-we-heard-you-like-proposals.md"
-  - "/docs/proposals/20190102-everyone-gets-a-proposal.md"
-replaces:
-  - "/docs/proposals/20181231-replaced-proposal.md"
-superseded-by:
-  - "/docs/proposals/20190104-superceding-proposal.md"
+  - "https://en.wikipedia.org/wiki/Prototype_pattern"
 ---
 
 # Title 
