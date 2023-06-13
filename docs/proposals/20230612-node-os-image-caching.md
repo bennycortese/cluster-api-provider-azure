@@ -152,7 +152,7 @@ spec:
 ```
 
 Example AzureMachinePool yaml:
-``` AzureMachinePool
+```yaml
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AzureMachinePool
 metadata:
