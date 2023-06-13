@@ -138,7 +138,7 @@ In terms of how a healthy node would be selected, there should be an annotation 
 In terms of data model changes, AzureMachine and AzureMachinePool changes are likely and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachine on AzureMachineTemplate we will add a new optional field under spec.template.spec called nodeCachingMode which will be enabled if present and a sub field under that called cacheInterval which will be set to 1 day by default, and it will be a required subfield of nodeCachingMode if that field is there. For AzureMachinePool we will do the same thing under spec.template in the AzureMachinePool files.
 
 Example AzureMachineTemplate yaml:
-``` AzureMachineTemplate
+```yaml
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AzureMachineTemplate
 metadata:
