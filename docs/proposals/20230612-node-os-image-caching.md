@@ -141,6 +141,8 @@ As for why the healthy node has to be shut down while creating a snapshot of it,
 
 In terms of how a healthy node would be selected, there is already an annotation on each node from its status as to when they’ve last been patched. An ideal node would be one which has been patched since the last prototype went into service and is running and healthy. Whichever node has been steadily healthy for the longest amount of time should be chosen as it’s the most overall stable. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication.
 
+In terms of when to take a snapshot, a day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters.
+
 In terms of data model changes, AzureMachine and AzureMachinePool changes are likely and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachine on AzureMachineTemplate we will add a new optional field under spec.template.spec called nodeCachingMode which will be enabled if present and a sub field under that called cacheInterval which will be set to 1 day by default, and it will be a required subfield of nodeCachingMode if that field is there. For AzureMachinePool we will do the same thing under spec.template in the AzureMachinePool files.
 
 Example AzureMachineTemplate yaml:
@@ -188,9 +190,8 @@ The UX will mostly be impactful towards operators and members of the CAPZ commun
 
 No currently known alternatives exist which are public and have been implemented for CAPZ. A savvy operator may also have created a similar system for their nodes but we hope to offload that responsibility to the CAPZ team in this process, and currently no other open source implementations of this for CAPZ are known to exist. 
 
-In terms of when to take a snapshot, a day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters.
+In terms of how we choose a node as the blessed one, lots of different metrics or heuristics can be used like manually creating a temporary prototype for testing, having the fastest ready time, or anything else which is seen as typically good but a more generalist approach is outlined here since more specific methods may not be as helpful for certain operators.
 
-In terms of how we choose a node as the blessed one, lots of different metrics or heuristics can be used like manually creating a temporary prototype for testing, having the fastest ready time, or anything else which is seen as typically good but a more generalist approach is outlined here since more specific methods may not be as helpful for certain operators. 
 For architectural details of where else the code could exist, the controller section makes the most sense since this proposal will be constantly modifying the state of our objects, but theoretically it could be largely put into hack with shell scripts and then a controller could simply be ordered to trigger that shell script, but this is less maintainable in the long run and not as preferred. 
 
 ## Upgrade Strategy
