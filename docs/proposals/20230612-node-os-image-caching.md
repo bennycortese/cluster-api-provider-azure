@@ -193,7 +193,7 @@ Turning off or on the feature is all that is required to keep previous behavior 
 
 There will be e2e tests, at least one of which will be as follows:
  Have an example node and an example patch, apply the patch to the preexisting node, and then trigger the controller to pretend the interval of time has passed, and then it should attempt to create another node and compare the OS image of the new node and the original node, finding that they are both the same image.
-It should be tested primarily in isolation as other components shouldn’t affect what it tries to do, but it may need to be checked with other components to see what happens if certain race conditions or updates at the same time of AzureMachineTemplate are occurring (in which case a lower priority should likely be assigned to this controller for finishing it’s task after as ideally those changes are in effect before isolating the node)
+It should be tested primarily in isolation as other components shouldn’t affect what it tries to do, but it may need to be checked with other components to see what happens if certain race conditions or updates at the same time of AzureMachineTemplate are occurring (in which case a lower priority should likely be assigned to this controller for finishing its task after as ideally those changes are in effect before isolating the node).
 
 ### Graduation Criteria [optional]
 
