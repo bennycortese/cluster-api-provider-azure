@@ -59,7 +59,7 @@ Shared Image Gallery - A repository that is an Azure Resource for managing and s
 
 Snapshot - A static copy of the image at the point in time that it is taken
 
-Blessed Node - whichever node has been the most stable and is chosen off of that metric as the one to clone the OS image off and cache it for future nodes to use
+Blessed Node - Whichever node has been the most stable and is chosen off of that metric as the one to clone the OS image of and cache it for future nodes to use
 
 ## Summary
 
