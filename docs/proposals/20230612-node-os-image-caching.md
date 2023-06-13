@@ -116,10 +116,8 @@ None currently known to be needed
 #### Non-Functional Requirements
 
 ##### NFR1
-The solution should increase the performance of horizontal scaling over time as people use this feature
 
 ##### NFR2
-The solution should cause no increased risks with security or reliability
 
 ### Implementation Details/Notes/Constraints
 
