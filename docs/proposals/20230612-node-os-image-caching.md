@@ -131,7 +131,7 @@ An operator will be able to decide to turn the feature on or off with a flag on 
 
 The controller will maintain a timestamp, and when the current time is the chosen interval ahead or more, the controller will perform the caching. When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a shared image gallery image, delete the snapshot, and then configure the AzureMachineTemplate specs to use that shared image gallery image. After, it will store the current time as its timestamp.
 
-	As for why the healthy node has to be shut down while creating a snapshot of it, if it isn’t shut down first then pods can be scheduled as the snapshot is taken which will cause some dangerous states in terms of how it exists after being utilized by the AzureMachineTemplates.
+As for why the healthy node has to be shut down while creating a snapshot of it, if it isn’t shut down first then pods can be scheduled as the snapshot is taken which will cause some dangerous states in terms of how it exists after being utilized by the AzureMachineTemplates.
 
 In terms of how a healthy node would be selected, there should be an annotation on each node as to when they’ve last been patched. An ideal node would be one which has been patched since the last prototype went into service and is running and healthy. Whichever node has been steadily healthy for the longest amount of time should be chosen as it’s the most overall stable. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication.
 
@@ -183,7 +183,9 @@ The UX will mostly be impactful towards operators and members of the CAPZ commun
 ## Alternatives
 
 No currently known alternatives exist which are public and have been implemented for CAPZ. A savvy operator may also have created a similar system for their nodes but we hope to offload that responsibility to the CAPZ team in this process, and currently no other open source implementations of this for CAPZ are known to exist. 
-	In terms of when to take a snapshot, a day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters. 
+
+In terms of when to take a snapshot, a day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters.
+
 In terms of how we choose a node as the blessed one, lots of different metrics or heuristics can be used like manually creating a temporary prototype for testing, having the fastest ready time, or anything else which is seen as typically good but a more generalist approach is outlined here since more specific methods may not be as helpful for certain operators. 
 For architectural details of where else the code could exist, the controller section makes the most sense since this proposal will be constantly modifying the state of our objects, but theoretically it could be largely put into hack with shell scripts and then a controller could simply be ordered to trigger that shell script, but this is less maintainable in the long run and not as preferred. 
 
@@ -196,7 +198,8 @@ Turning off or on the feature is all that is required to keep previous behavior 
 ### Test Plan [optional]
 
 There will be e2e tests, at least one of which will be as follows:
- Have an example node and an example patch, apply the patch to the preexisting node, and then trigger the controller to pretend the interval of time has passed, and then it should attempt to create another node and compare the OS image of the new node and the original node, finding that they are both the same image.
+Have an example node and an example patch, apply the patch to the preexisting node, and then trigger the controller to pretend the interval of time has passed, and then it should attempt to create another node and compare the OS image of the new node and the original node, finding that they are both the same image.
+
 It should be tested primarily in isolation as other components shouldn’t affect what it tries to do, but it may need to be checked with other components to see what happens if certain race conditions or updates at the same time of AzureMachineTemplate are occurring (in which case a lower priority should likely be assigned to this controller for finishing its task after as ideally those changes are in effect before isolating the node).
 
 ### Graduation Criteria [optional]
