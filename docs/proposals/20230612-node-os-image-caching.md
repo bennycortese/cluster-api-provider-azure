@@ -100,7 +100,7 @@ As a cluster operator I want to bring up new nodes that already have the contain
 
 #### Credits
 
-A big thank you to Jack Francis, Michael Sinz, and Amr Hanafi for their work on the Kamino project that used a similar Prototype Pattern with AKSEngine which inspired this feature request: jackfrancis/kamino: Kubernetes node clone factory (github.com)
+A big thank you to Jack Francis, Michael Sinz, and Amr Hanafi for their work on the Kamino project that used a similar Prototype Pattern with AKSEngine which inspired this feature request: https://github.com/jackfrancis/kamino
 
 ### Requirements (Optional)
 
