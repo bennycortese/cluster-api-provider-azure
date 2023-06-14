@@ -95,7 +95,7 @@ We will know we’ve succeeded when we can benchmark speed increases and success
 
 As a cluster operator I want to bring up new nodes that already have the container images of the applications it will run pre-cached so that pods start running quicker when scheduled, resulting in faster horizontal scaling.
 
-#### As an operator of CAPZ, I want to reduce monetary and environmental costs
+#### As an operator of clusters managed by CAPZ, I want to reduce monetary and environmental costs
 
 As a cluster operator I want to have lower monetary and environmental costs. I want my Nodes' OS images to be continually cached, and thus I will be able to avoid longer pull times and avoid having to create warm nodes and overprovision. This will be better for the environment and cheaper for me as I will not have to waste excess resources on warm nodes.
 
