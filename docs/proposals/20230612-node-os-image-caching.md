@@ -91,17 +91,17 @@ We will know we’ve succeeded when we can benchmark speed increases and success
 
 ### User Stories
 
-#### As an operator of CAPZ, I want faster horizontal scaling on new node deployment
+#### As an operator, I want to be able to have faster horizontal scaling with pods running quicker when scheduled
 
-People setting up CAPZ clusters will be able to have faster horizontal scaling because their Nodes’s OS images will be continually cached, and thus they will be able to avoid longer pull times and avoid having to create warm nodes and overprovision.
+As a cluster operator I want to bring up new nodes that already have the container images of the applications it will run pre-cached so that pods start running quicker when scheduled, resulting in faster horizontal scaling.
+
+#### As an operator of CAPZ, I want to reduce monetary and environmental costs
+
+As a cluster operator I want to have lower monetary and environmental costs. I want my Nodes' OS images to be continually cached, and thus I will be able to avoid longer pull times and avoid having to create warm nodes and overprovision. This will be better for the environment and cheaper for me as I will not have to waste excess resources on warm nodes.
 
 #### As an operator, I want to be able to be more inline with security compliance as I spin up nodes
 
 As an operator I would like to be able to have my node’s OS image cache for the ability to avoid security alerts, cache security updates and patches so that I’ll be more security compliant and up to date when I have to spin up a new node. Otherwise, flags will be raised that a node is out of date on boot up before it finishes patching and a temporary security risk will exist.
-
-#### As an operator, I want to be able to have pods run quicker when scheduled
-
-As a cluster operator I want to bring up new nodes that already have the container images of the applications it will run pre-cached so that pods start running quicker when scheduled.
 
 ### Requirements (Optional)
 
