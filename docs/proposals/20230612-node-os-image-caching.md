@@ -119,7 +119,52 @@ The controller will maintain a timestamp, and when the current time is the chose
 
 As for why the healthy node has to be shut down while creating a snapshot of it, if it isn’t shut down first then pods can be scheduled as the snapshot is taken which will cause some dangerous states in terms of how it exists after being utilized by the AzureMachineTemplates.
 
-In terms of how a healthy node would be selected, there is already an annotation on each node from its status as to when they’ve last been patched. An ideal node would be one which has been patched since the last prototype went into service and is running and healthy. Whichever node has been steadily healthy for the longest amount of time since the last patch and has the patch applied should be chosen as it’s the most overall stable. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication.
+In terms of how a healthy node would be selected, there is already a timestamp on each AzureMachinePool from its status.conditions.lastTransitionTime type ScaleSetModelUpdated as to when they’ve last been patched. There is also a timestamp on its status.conditions.lastTransitionTime type ScaleSetRunning as to when it last started running. For AzureMachine instances, we would need to add these timestamps or track it programmatically, below I have put an example of the yaml changes for storing the timestamp. An ideal node would be one which has been patched since the last prototype went into service and is running and healthy. Whichever node has been running and healthy for the longest amount of time since the last patch and has the patch applied should be chosen as it’s the most overall stable. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication.
+
+Example AzureMachinePool yaml with the timestamps in status:
+
+```yaml
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AzureMachinePool
+metadata:
+  name: node-os-image-caching-machine-pool
+  namespace: default
+status:
+  conditions:
+  - lastTransitionTime: "2023-06-12T23:14:55Z"
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2023-06-12T23:14:00Z"
+    status: "True"
+    type: BootstrapSucceeded
+  - lastTransitionTime: "2023-06-12T23:14:55Z"
+    status: "True"
+    type: ScaleSetDesiredReplicas
+  - lastTransitionTime: "2023-06-12T23:14:55Z"
+    status: "True"
+    type: ScaleSetModelUpdated
+  - lastTransitionTime: "2023-06-12T23:14:55Z"
+    status: "True"
+    type: ScaleSetRunning
+```
+
+Example AzureMachine yaml with the proposed additional needed timestamps in status:
+
+```yaml
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AzureMachine
+metadata:
+  name: node-os-image-caching-machine
+  namespace: default
+status:
+  conditions:
+  - lastTransitionTime: "2023-06-12T23:14:55Z"
+    status: "True"
+    type: ScaleSetModelUpdated
+  - lastTransitionTime: "2023-06-12T23:14:55Z"
+    status: "True"
+    type: ScaleSetRunning
+```
 
 In terms of when to take a snapshot, a day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters.
 
@@ -155,7 +200,7 @@ spec:
 ![Figure 1](./images/node-os-image-cache.png)
 
 ### Security Model
-This proposal requires CAPZ to have write permissions for azureMachineTemplates in order to properly update the nodes’ OS image on the spec. Go has a library called time and time.ParseDuration will be used to parse the time interval provided by an operator instead of using regular expressions. Denial of service attacks will be protected against by having an update system which doesn’t need to be atomic. If part of the caching is complete there is no risk in the update not finishing since the spec update will happen at once. No sensitive data is being stored in a secret.
+This proposal requires CAPZ to have write permissions for azureMachinePools and azureMachineTemplates in order to properly update the nodes’ OS image on the spec. Go has a library called time and time.ParseDuration will be used to parse the time interval provided by an operator instead of using regular expressions. Denial of service attacks will be protected against by having an update system which doesn’t need to be atomic. If part of the caching is complete there is no risk in the update not finishing since the spec update will happen at once. No sensitive data is being stored in a secret.
 
 ### Risks and Mitigations
 
