@@ -86,6 +86,7 @@ We will know we’ve succeeded when we can benchmark speed increases and success
 1. Optimization for efficiency and scalability
 1. A more complicated method of selecting a good candidate node such as incorporating manual forced prototype creation, which would perform better but take research to find the optimal method
 1. Optimization of the default time interval into a specific, best general default which would have to be researched
+1. Bad snapshot rollbacks since it will be hard to generically determine when a snapshot is bad currently
 
 ## Proposal
 
@@ -205,7 +206,7 @@ This proposal requires CAPZ to have write permissions for azureMachinePools and 
 ### Risks and Mitigations
 
 Example risks:
-1. A bad snapshot is taken, and we will mitigate this risk by having a rollback if a bad snapshot is detected as taken and have prevention techniques in place to detect if the snapshot is bad before taking it. In practice, when a new node is spun up with the bad snapshot, it will be detected and then the node will be shut down. The node OS image being used to create new nodes will then be reverted to the previous one which will still be cached until a successful new node has been spawned, so since it was a failed creation here we will just revert to that previous image and create the desired node.
+1. A bad snapshot is taken, and we will mitigate this risk by having trying to prevent it before it happens by checking if things are ready and draining everything before taking the snapshot. Rolling back and determining if a bad shapshot is bad is out of scope for this proposal currently and will be for the operator to watch, so here we will simply try to prevent it as best as we can.
 1. A bad security patch or update might have been applied to a user’s node that they don’t want to be applied to future nodes. To mitigate this risk, we will make it easy for users to turn this feature off, and if they fix it on their original node the snapshot will be taken of that node instead.
 
 The UX will mostly be impactful towards operators and members of the CAPZ community will test these changes and give feedback on them. Security will also likely follow in terms of how it gets reviewed, but no major security problems should be possible from this change. For folks who work outside the SIG or subproject, they should hopefully have faster horizontal scaling without needing to directly do anything outside of setting an environment variable on clusterctl initialization and updating their AzureMachinePools and AzureMachineTemplates.
