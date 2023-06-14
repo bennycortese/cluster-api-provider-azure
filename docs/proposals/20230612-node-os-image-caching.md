@@ -74,7 +74,7 @@ A model scenario would be an operator spinning up a CAPZ cluster and having this
 
 ### Goals
 
-1. A solution using the Node Prototype pattern which cache’s nodes’ OS image on a regular interval and replaces it as a new Machine or MachinePool template VM image.
+1. A solution using the Node Prototype pattern which cache’s nodes’ OS image on a regular interval and replaces it as a new Machine or MachinePool template VM image
 1. Faster horizontal scale outs
 1. Prevent security breaking issues on node bootup from security updates being required immediately
 
@@ -84,7 +84,7 @@ We will know we’ve succeeded when we can benchmark speed increases and success
 
 1. Extend the functionality to Windows nodes
 1. Optimization for efficiency and scalability
-1. A more complicated method of selecting a good candidate node such as incorporating manual forced prototype creation, which would perform better but take research to find the optimal method. 
+1. A more complicated method of selecting a good candidate node such as incorporating manual forced prototype creation, which would perform better but take research to find the optimal method
 1. Optimization of the default time interval into a specific, best general default which would have to be researched
 
 ## Proposal
@@ -107,7 +107,7 @@ As a cluster operator I want to bring up new nodes that already have the contain
 
 #### Functional Requirements
 
-None currently known to be needed
+None currently known to be needed.
 
 ##### FR1
 
