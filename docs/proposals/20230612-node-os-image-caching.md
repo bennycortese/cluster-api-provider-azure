@@ -78,7 +78,7 @@ A model scenario would be an operator spinning up a CAPZ cluster and having this
 1. Faster horizontal scale outs
 1. Prevent security breaking issues on node bootup from security updates being required immediately
 
-We will know we’ve succeeded when we can benchmark speed increases and successful image changes
+We will know we’ve succeeded when we can benchmark speed increases and successful image changes.
 
 ### Non-Goals/Future Work
 
