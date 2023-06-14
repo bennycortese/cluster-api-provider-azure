@@ -63,7 +63,7 @@ Prototype Node - Whichever node has been the most steadily healthy for the longe
 
 ## Summary
 
-The existing controllers will modified to cache the Nodes’ OS image on a regular interval and update the model to use that image for future scale outs. This feature will allow for:
+The existing controllers will be modified to cache the Nodes’ OS image on a regular interval and update the model to use that image for future scale outs. This feature will allow for:
 - faster horizontal scaling 
 - prevent security alerts from new nodes which immediately need a security update as those new nodes will now come with the security update already installed
 - help prevent users from needing to spin up warm nodes and overprovision
@@ -95,7 +95,7 @@ We will know we’ve succeeded when we can benchmark speed increases and success
 
 As a cluster operator I want to bring up new nodes that already have the container images of the applications it will run pre-cached so that pods start running quicker when scheduled, resulting in faster horizontal scaling.
 
-#### As an operator of CAPZ, I want to reduce monetary and environmental costs
+#### As an operator of clusters managed by CAPZ, I want to reduce monetary and environmental costs
 
 As a cluster operator I want to have lower monetary and environmental costs. I want my Nodes' OS images to be continually cached, and thus I will be able to avoid longer pull times and avoid having to create warm nodes and overprovision. This will be better for the environment and cheaper for me as I will not have to waste excess resources on warm nodes.
 
