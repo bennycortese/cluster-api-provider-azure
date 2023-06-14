@@ -103,27 +103,11 @@ As a cluster operator I want to have lower monetary and environmental costs. I w
 
 As an operator I would like to be able to have my node’s OS image cache for the ability to avoid security alerts, cache security updates and patches so that I’ll be more security compliant and up to date when I have to spin up a new node. Otherwise, flags will be raised that a node is out of date on boot up before it finishes patching and a temporary security risk will exist.
 
-### Requirements (Optional)
-
-#### Functional Requirements
-
-None currently known to be needed.
-
-##### FR1
-
-##### FR2
-
-#### Non-Functional Requirements
-
-##### NFR1
-
-##### NFR2
-
 ### Implementation Details/Notes/Constraints
 
 The plan is to modify the existing Controllers with the Node Prototype Pattern as desired. These controller additions can be added to AzureMachine Controller and AzureMachinePool Controller.
 
-An operator will be able to decide to turn the feature on or off with an environment variable on creation of a cluster, and then can update the AzureMachineTemplate and AzureMachinePool to customize how long they want the caching interval to be (see the yaml files below in this section for the caching interval).
+An operator will be able to decide to turn the feature on or off with an environment variable on clusterctl initialization, and then on a cluster by cluster basis can alter the AzureMachineTemplates and AzureMachinePools to specify the use of the feature. They can also update the AzureMachineTemplate and AzureMachinePool to customize how long they want the caching interval to be (see the yaml files below in this section for the caching interval).
 
 Example of the enviornment variable being turned on:
 
@@ -179,7 +163,7 @@ Example risks:
 1. A bad snapshot is taken, and we will mitigate this risk by having a rollback if a bad snapshot is detected as taken and have prevention techniques in place to detect if the snapshot is bad before taking it. In practice, when a new node is spun up with the bad snapshot, it will be detected and then the node will be shut down. The node OS image being used to create new nodes will then be reverted to the previous one which will still be cached until a successful new node has been spawned, so since it was a failed creation here we will just revert to that previous image and create the desired node.
 1. A bad security patch or update might have been applied to a user’s node that they don’t want to be applied to future nodes. To mitigate this risk, we will make it easy for users to turn this feature off, and if they fix it on their original node the snapshot will be taken of that node instead.
 
-The UX will mostly be impactful towards operators and members of the CAPZ community will test these changes and give feedback on them. Security will also likely follow in terms of how it gets reviewed, but no major security problems should be possible from this change. For folks who work outside the SIG or subproject, they should hopefully have faster horizontal scaling without needing to directly do anything outside of setting an environment variable on cluster creation or updating their AzureMachinePools and AzureMachineTemplates.
+The UX will mostly be impactful towards operators and members of the CAPZ community will test these changes and give feedback on them. Security will also likely follow in terms of how it gets reviewed, but no major security problems should be possible from this change. For folks who work outside the SIG or subproject, they should hopefully have faster horizontal scaling without needing to directly do anything outside of setting an environment variable on clusterctl initialization and updating their AzureMachinePools and AzureMachineTemplates.
 
 
 ## Alternatives
@@ -192,7 +176,7 @@ For architectural details of where else the code could exist, the controller sec
 
 ## Upgrade Strategy
 
-Turning off or on the feature for a particular operator is done with them setting an environment variable and that is all that is required to keep previous behavior or make use of the enhancement. No backwards compatibility will be broken, all this feature request will do is change previous controllers and add optional fields to AzureMachinePool and AzureMachineTemplate which can be utilized or not as desired.
+Turning off or on the feature for a particular operator is done with them setting an environment variable to enable or disable it with clusterctl initialization. They will also be able to alter their AzureMachinePool and AzureMachineTemplate instances to add the feature or remove it and that is all that is required to keep previous behavior or make use of the enhancement. No backwards compatibility will be broken, all this feature request will do is change previous controllers and add optional fields to AzureMachinePool and AzureMachineTemplate which can be utilized or not as desired.
 
 ## Additional Details
 
