@@ -116,7 +116,17 @@ Example of the enviornment variable being turned on:
 export AZURE_OS_CACHING=true
 ```
 
-The controller will maintain a timestamp, and when the current time is the chosen interval ahead or more, the controller will perform the caching. When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a shared image gallery image, delete the snapshot, and then configure the AzureMachineTemplate specs to use that shared image gallery image. After, it will store the current time as its timestamp.
+The controller will maintain a timestamp in each AzureMachinePool and AzureMachineTemplate, and when the current time is the chosen interval ahead or more, the controller will perform the caching. Since the current controller manager requeues all objects every ten minutes by default the objects will be requeued shortly after its due time to be recached. This is because typically we expect to cache every 24 hours and it is very unexpected that this won't be frequent enough considering normal patch rates. When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a shared image gallery image, delete the snapshot, and then configure the AzureMachineTemplate specs to use that shared image gallery image. After, it will store the current time as its timestamp.
+
+Example of how the timestamp will be maintained in the AzureMachinePool and AzureMachineTemplates:
+
+```yaml
+status:
+  conditions:
+  - lastTransitionTime: "2023-06-12T23:14:55Z"
+    status: "True"
+    type: LastOsCache
+```
 
 As for why the healthy node has to be shut down while creating a snapshot of it, if it isn’t shut down first then pods can be scheduled as the snapshot is taken which will cause some dangerous states in terms of how it exists after being utilized by the AzureMachineTemplates.
 
