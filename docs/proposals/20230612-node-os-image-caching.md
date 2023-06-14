@@ -59,7 +59,7 @@ Shared Image Gallery - A repository that is an Azure Resource for managing and s
 
 Snapshot - A static copy of the image at the point in time that it is taken
 
-Blessed Node - Whichever node has been the most stable and is chosen off of that metric as the one to clone the OS image of and cache it for future nodes to use
+Prototype Node - Whichever node has been the most steadily healthy for the longest (so it has the oldest last transition to ready state) and is chosen off of that metric as the one to clone the OS image of and cache it for future nodes to use
 
 ## Summary
 
@@ -186,7 +186,7 @@ The UX will mostly be impactful towards operators and members of the CAPZ commun
 
 No currently known alternatives exist which are public and have been implemented for CAPZ. A savvy operator may also have created a similar system for their nodes but we hope to offload that responsibility to the CAPZ team in this process, and currently no other open source implementations of this for CAPZ are known to exist. 
 
-In terms of how we choose a node as the blessed one, lots of different metrics or heuristics can be used like manually creating a temporary prototype for testing, having the fastest ready time, or anything else which is seen as typically good but a more generalist approach is outlined here since more specific methods may not be as helpful for certain operators.
+In terms of how we choose a node as the prototype node, lots of different metrics or heuristics can be used like manually creating a temporary prototype for testing, having the fastest ready time, or anything else which is seen as typically good but a more generalist approach is outlined here since more specific methods may not be as helpful for certain operators.
 
 For architectural details of where else the code could exist, the controller section makes the most sense since this proposal will be constantly modifying the state of our objects, but theoretically it could be largely put into hack with shell scripts and then a controller could simply be ordered to trigger that shell script, but this is less maintainable in the long run and not as preferred. 
 
