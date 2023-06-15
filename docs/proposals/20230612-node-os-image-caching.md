@@ -179,7 +179,7 @@ status:
 
 In terms of when to take a snapshot, a day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters.
 
-In terms of data model changes, AzureMachine and AzureMachinePool changes are likely and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachine on AzureMachineTemplate we will add a new optional field under spec.template.spec called nodeCachingMode which will be enabled if present and a sub field under that called cacheInterval which will be set to 1 day by default, and it will be a required subfield of nodeCachingMode if that field is there. For AzureMachinePool we will do the same thing under spec.template in the AzureMachinePool files.
+In terms of data model changes, AzureMachine and AzureMachinePool changes are likely and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachineTemplate and AzureMachinePool we will add a new optional field under meta.annotations called nodeCachingModeInterval which will be enabled if present and it will map to an interval of 1 day by default.
 
 Example AzureMachineTemplate yaml:
 ```yaml
@@ -188,11 +188,8 @@ kind: AzureMachineTemplate
 metadata:
   name: node-os-image-caching-machine-template
   namespace: default
-spec:
-  template:
-    spec:
-      nodeCachingMode:
-        interval: 24h
+  annotations:
+    nodeCachingInterval: 24h
 ```
 
 Example AzureMachinePool yaml:
@@ -202,10 +199,8 @@ kind: AzureMachinePool
 metadata:
   name: node-os-image-caching-machine-pool
   namespace: default
-spec:
-  template:
-    nodeCachingMode:
-      interval: 24h
+  annotations:
+    nodeCachingInterval: 24h
 ```
 
 ![Figure 1](./images/node-os-image-cache.png)
@@ -246,7 +241,39 @@ It should be tested primarily in isolation as other components shouldn’t affec
 ### Graduation Criteria [optional]
 
 alpha - The feature is initially constructed and toggleable with an environment variable
-beta - The feature has e2e tests implemented and is more integrated and seamless with the project.
+
+Beta:
+
+The feature has e2e tests implemented and is more integrated and seamless with the project.
+
+Ideally for AzureMachineTemplate we will move the feature enabled specification from metadata.annotations to a new optional field under spec.template.spec called nodeCachingMode which will be enabled if present and a sub field under that called cacheInterval which will be set to 1 day by default, and it will be a required subfield of nodeCachingMode if that field is there. For AzureMachinePool we will do the same thing under spec.template in the AzureMachinePool files.
+
+Example AzureMachineTemplate yaml:
+```yaml
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AzureMachineTemplate
+metadata:
+  name: node-os-image-caching-machine-template
+  namespace: default
+spec:
+  template:
+    spec:
+      nodeCachingMode:
+        interval: 24h
+```
+
+Example AzureMachinePool yaml:
+```yaml
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AzureMachinePool
+metadata:
+  name: node-os-image-caching-machine-pool
+  namespace: default
+spec:
+  template:
+    nodeCachingMode:
+      interval: 24h
+```
 At this point we should also move the
 
 Example AzureMachineTemplate yaml:
