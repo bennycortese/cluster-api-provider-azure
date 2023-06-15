@@ -132,6 +132,9 @@ As for why the healthy node has to be shut down while creating a snapshot of it,
 
 In terms of how a healthy node would be selected, there is already a timestamp on each AzureMachinePool from its status.conditions.lastTransitionTime type ScaleSetModelUpdated as to when they’ve last been patched. There is also a timestamp on its status.conditions.lastTransitionTime type ScaleSetRunning as to when it last started running. For AzureMachine instances, we would need to add these timestamps or track it programmatically, below I have put an example of the yaml changes for storing the timestamp. An ideal node would be one which has been patched since the last prototype went into service and is running and healthy. Whichever node has been running and healthy for the longest amount of time since the last patch and has the patch applied should be chosen as it’s the most overall stable. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication.
 
+Diagram of the Node OS Caching Process:
+![Figure 1](./images/node-os-image-cache.png)
+
 Example AzureMachinePool yaml with the timestamps in status:
 
 ```yaml
