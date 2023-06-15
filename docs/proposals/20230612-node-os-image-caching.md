@@ -242,7 +242,9 @@ It should be tested primarily in isolation as other components shouldn’t affec
 
 ### Graduation Criteria [optional]
 
-alpha - The feature is initially constructed and toggleable with an environment variable
+Alpha:
+
+The feature is initially constructed and toggleable with an environment variable
 
 Beta:
 
