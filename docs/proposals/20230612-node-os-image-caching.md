@@ -86,7 +86,7 @@ We will know we’ve succeeded when we can benchmark speed increases and success
 1. Optimization for efficiency and scalability
 1. A more complicated method of selecting a good candidate node such as incorporating manual forced prototype creation, which would perform better but take research to find the optimal method
 1. Optimization of the default time interval into a specific, best general default which would have to be researched
-1. Bad snapshot rollbacks since it will be hard to generically determine when a snapshot is bad currently
+1. Automatic bad snapshot rollbacks since it will be hard to generically determine when a snapshot is bad currently
 
 ## Proposal
 
