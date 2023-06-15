@@ -246,7 +246,11 @@ Beta:
 
 The feature has e2e tests implemented and is more integrated and seamless with the project.
 
-Ideally for AzureMachineTemplate we will move the feature enabled specification from metadata.annotations to a new optional field under spec.template.spec called nodeCachingMode which will be enabled if present and a sub field under that called cacheInterval which will be set to 1 day by default, and it will be a required subfield of nodeCachingMode if that field is there. For AzureMachinePool we will do the same thing under spec.template in the AzureMachinePool files.
+Stable: 
+
+The feature has been used for a while and is widely acceptable as well as reliable and will now be enabled by default.
+
+For AzureMachineTemplate we will move the feature enabled specification from metadata.annotations to a new optional field under spec.template.spec called nodeCachingMode which will be enabled if present and a sub field under that called cacheInterval which will be set to 1 day by default, and it will be a required subfield of nodeCachingMode if that field is there. For AzureMachinePool we will do the same thing under spec.template in the AzureMachinePool files.
 
 Example AzureMachineTemplate yaml:
 ```yaml
@@ -274,36 +278,7 @@ spec:
     nodeCachingMode:
       interval: 24h
 ```
-At this point we should also move the
 
-Example AzureMachineTemplate yaml:
-```yaml
-apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
-kind: AzureMachineTemplate
-metadata:
-  name: node-os-image-caching-machine-template
-  namespace: default
-spec:
-  template:
-    spec:
-      nodeCachingMode:
-        interval: 24h
-```
-
-Example AzureMachinePool yaml:
-```yaml
-apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
-kind: AzureMachinePool
-metadata:
-  name: node-os-image-caching-machine-pool
-  namespace: default
-spec:
-  template:
-    nodeCachingMode:
-      interval: 24h
-```
-
-stable - The feature has been used for a while and is widely acceptable as well as reliable and will now be enabled by default.
 
 ### Version Skew Strategy [optional]
 
