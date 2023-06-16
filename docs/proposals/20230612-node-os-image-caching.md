@@ -183,7 +183,7 @@ status:
 
 In terms of when to take a snapshot, a day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters.
 
-In terms of data model changes, AzureMachine and AzureMachinePool changes are likely and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachineTemplate and AzureMachinePool we will add a new optional field under meta.annotations called nodeCachingModeInterval which will be enabled if present and it will map to an interval of 1 day by default.
+In terms of data model changes, AzureMachine and AzureMachinePool will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachineTemplate and AzureMachinePool we will add a new optional field under meta.annotations called nodeCachingModeInterval which will be enabled if present and it will map to an interval of 1 day by default.
 
 Example AzureMachineTemplate yaml:
 ```yaml
