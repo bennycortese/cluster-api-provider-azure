@@ -183,7 +183,7 @@ status:
 
 In terms of when to take a snapshot, a day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters.
 
-In terms of data model changes, AzureMachine and AzureMachinePool will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachineTemplate and AzureMachinePool we will add a new optional field under meta.annotations called nodeCachingModeInterval which will be enabled if present and it will map to an interval of 1 day by default.
+In terms of data model changes, AzureMachine, MachineDeployment and AzureMachinePool will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachineTemplate and AzureMachinePool we will add a new optional field under meta.annotations called nodeCachingModeInterval which will be enabled if present and it will map to an interval of 1 day by default. For MachineDeployment and AzureMachinePool, we will add an optional field under spec.strategy.rollingUpdate called cacheAutomaticRollout which will be set to false by default since we don't want the replacement of a node OS image to automatically trigger a rolling update of all the nodes. This is because the new image will be functionally identical to the old one outside of name itself (since the old nodes will all have the update and security patch contents already present). If for some reason the operator wants to always trigger this rollout (maybe if they programatically use the image names themselves), then they can simply set this field to true.
 
 Example AzureMachineTemplate yaml:
 ```yaml
@@ -205,6 +205,29 @@ metadata:
   namespace: default
   annotations:
     nodeCachingInterval: 24h
+spec:
+  rollingUpdate:
+      deletePolicy: Oldest
+      maxSurge: 25%
+      maxUnavailable: 1
+      cacheAutomaticRollout: false
+  type: RollingUpdate
+```
+
+Example MachineDeployment yaml:
+```yaml
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: ${CLUSTER_NAME}-md-1
+  namespace: default
+spec:
+  rollingUpdate:
+      deletePolicy: Oldest
+      maxSurge: 25%
+      maxUnavailable: 1
+      cacheAutomaticRollout: false
+  type: RollingUpdate
 ```
 
 ### Security Model
@@ -226,6 +249,8 @@ No currently known alternatives exist which are public and have been implemented
 In terms of how we choose a node as the prototype node, lots of different metrics or heuristics can be used like manually creating a temporary prototype for testing, having the fastest ready time, or anything else which is seen as typically good but a more generalist approach is outlined here since more specific methods may not be as helpful for certain operators.
 
 For architectural details of where else the code could exist, the controller section makes the most sense since this proposal will be constantly modifying the state of our objects, but theoretically it could be largely put into hack with shell scripts and then a controller could simply be ordered to trigger that shell script, but this is less maintainable in the long run and not as preferred. 
+
+In terms of rollout strategies, we could prevent exposing the strategy altogether and just make it so that caching doesn't automatically rollout an update to all the other nodes. This would give users less customizability but in a typically expected use case this will effectively be the exact same end result.
 
 ## Upgrade Strategy
 
