@@ -55,7 +55,7 @@ Node Prototype Pattern - Where we take a known good/working OS snapshot and make
 
 Warm nodes - The concept of keeping up extraneous and unused nodes to prevent having to wait for patches or security updates, thus allowing you to have those nodes ready when more users try to use your service without the wait times.
 
-Shared Image Gallery - A repository that is an Azure Resource for managing and sharing images
+Compute Image Gallery - A repository that is an Azure Resource for managing and sharing images
 
 Snapshot - A static copy of the image at the point in time that it is taken
 
@@ -116,21 +116,18 @@ Example of the enviornment variable being turned on:
 export AZURE_OS_CACHING=true
 ```
 
-The controller will maintain a timestamp in each AzureMachinePool and AzureMachineTemplate, and when the current time is the chosen interval ahead or more, the controller will perform the caching. Since the current controller manager requeues all objects every ten minutes by default the objects will be requeued shortly after its due time to be recached. This is because typically we expect to cache every 24 hours and it is very unexpected that this won't be frequent enough considering normal patch rates. When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a shared image gallery image, delete the snapshot, and then configure the AzureMachineTemplate specs to use that shared image gallery image. After, it will store the current time as its timestamp.
+The controller will maintain a timestamp in each AzureMachinePool and AzureMachineTemplate, and when the current time is the chosen interval ahead or more, the controller will perform the caching. Since the current controller manager requeues all objects every ten minutes by default the objects will be requeued shortly after its due time to be recached. This is because typically we expect to cache every 24 hours and it is very unexpected that this won't be frequent enough considering normal patch rates. When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a compute image gallery image, delete the snapshot, and then configure the AzureMachineTemplate specs to use that compute image gallery image. After, it will store the current time as its timestamp.
 
 Example of how the timestamp will be maintained in the AzureMachinePool and AzureMachineTemplates:
 
 ```yaml
 status:
-  conditions:
-  - lastTransitionTime: "2023-06-12T23:14:55Z"
-    status: "True"
-    type: LastOsCache
+  lastPrototype: "2023-06-12T23:14:55Z"
 ```
 
 As for why the healthy node has to be shut down while creating a snapshot of it, if it isn’t shut down first then pods can be scheduled as the snapshot is taken which will cause some dangerous states in terms of how it exists after being utilized by the AzureMachineTemplates.
 
-In terms of how a healthy node would be selected, there is already state data present on each AzureMachinePoolMachine under spec.status which is latestModelApplied : true which is present when the node has been fully updated and not present while it is updating. For AzureMachine instances, we would need to add this field. An ideal node would be one which has been patched since the last prototype went into service and is running and healthy. Whichever node has been running and healthy for the longest amount of time since the last patch and has the patch applied should be chosen as it’s the most overall stable. This means that for AzureMachinePoolMachines and AzureMachines we will take the node with the earliest creation time from metadata.creationTimestamp and has latestModelApplied : true present. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication.
+In terms of how a healthy node would be selected, there is already state data present on each AzureMachinePoolMachine under spec.status which is latestModelApplied : true which is present when the node is up to date with user changes to the image. For AzureMachine instances, we would need to add this field. An ideal node would be one which has been patched since the last prototype went into service and is running and healthy. Whichever node has been running and healthy for the longest amount of time since the last patch and has the patch applied should be chosen as it’s the most overall stable. This means that for AzureMachinePoolMachines and AzureMachines we will take the node with the earliest creation time from metadata.creationTimestamp and has latestModelApplied : true present. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication.
 
 Diagram of the Node OS Caching Process:
 
@@ -144,23 +141,21 @@ kind: AzureMachinePool
 metadata:
   name: node-os-image-caching-machine-pool
   namespace: default
+  creationTimestamp: "2023-06-20T17:41:54Z"
 status:
   conditions:
-  - lastTransitionTime: "2023-06-12T23:14:55Z"
+  - lastTransitionTime: "2023-06-20T17:43:39Z"
     status: "True"
     type: Ready
-  - lastTransitionTime: "2023-06-12T23:14:00Z"
+  - lastTransitionTime: "2023-06-20T17:43:39Z"
     status: "True"
     type: BootstrapSucceeded
-  - lastTransitionTime: "2023-06-12T23:14:55Z"
+  - lastTransitionTime: "2023-06-20T17:43:39Z"
     status: "True"
-    type: ScaleSetDesiredReplicas
-  - lastTransitionTime: "2023-06-12T23:14:55Z"
-    status: "True"
-    type: ScaleSetModelUpdated
-  - lastTransitionTime: "2023-06-12T23:14:55Z"
-    status: "True"
-    type: ScaleSetRunning
+    type: NodeHealthy
+  latestModelApplied: true
+  provisioningState: Succeeded
+  ready: true
 ```
 
 Example AzureMachine yaml with the proposed additional needed timestamps in status:
@@ -183,7 +178,7 @@ status:
 
 In terms of when to take a snapshot, a day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters.
 
-In terms of data model changes, AzureMachine, MachineDeployment and AzureMachinePool will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachineTemplate and AzureMachinePool we will add a new optional field under meta.annotations called nodeCachingModeInterval which will be enabled if present and it will map to an interval of 1 day by default. For MachineDeployment and AzureMachinePool, we will add an optional field under spec.strategy.rollingUpdate called cacheAutomaticRollout which will be set to false by default since we don't want the replacement of a node OS image to automatically trigger a rolling update of all the nodes. This is because the new image will be functionally identical to the old one outside of name itself (since the old nodes will all have the update and security patch contents already present). If for some reason the operator wants to always trigger this rollout (maybe if they programatically use the image names themselves), then they can simply set this field to true.
+In terms of data model changes, AzureMachine, MachineDeployment and AzureMachinePool will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachineTemplate and AzureMachinePool we will add a new optional field under metadata.annotations called nodeCachingModeInterval which will be enabled if present and it will map to an interval of 1 day by default. For MachineDeployment and AzureMachinePool, we will add an optional field under spec.strategy.rollingUpdate called cacheAutomaticRollout which will be set to false by default since we don't want the replacement of a node OS image to automatically trigger a rolling update of all the nodes. This is because the new image will be functionally identical to the old one outside of name itself (since the old nodes will all have the update and security patch contents already present). If for some reason the operator wants to always trigger this rollout (maybe if they programatically use the image names themselves), then they can simply set this field to true.
 
 Example AzureMachineTemplate yaml:
 ```yaml
@@ -192,8 +187,11 @@ kind: AzureMachineTemplate
 metadata:
   name: node-os-image-caching-machine-template
   namespace: default
-  annotations:
-    nodeCachingInterval: 24h
+spec:
+  template:
+    image:
+      nodePrototyping:
+        interval: 24h
 ```
 
 Example AzureMachinePool yaml:
@@ -203,9 +201,10 @@ kind: AzureMachinePool
 metadata:
   name: node-os-image-caching-machine-pool
   namespace: default
-  annotations:
-    nodeCachingInterval: 24h
 spec:
+  image:
+      nodePrototyping:
+        interval: 24h
   rollingUpdate:
       deletePolicy: Oldest
       maxSurge: 25%
@@ -290,8 +289,8 @@ metadata:
   namespace: default
 spec:
   template:
-    spec:
-      nodeCachingMode:
+    image:
+      nodePrototyping:
         interval: 24h
 ```
 
@@ -304,8 +303,9 @@ metadata:
   namespace: default
 spec:
   template:
-    nodeCachingMode:
-      interval: 24h
+    image:
+      nodePrototyping:
+        interval: 24h
 ```
 
 
