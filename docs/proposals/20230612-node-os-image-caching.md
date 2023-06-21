@@ -116,7 +116,7 @@ Example of the enviornment variable being turned on:
 export AZURE_OS_CACHING=true
 ```
 
-The controller will maintain a timestamp in each AzureMachinePool and AzureMachineTemplate, and when the current time is the chosen interval ahead or more, the controller will perform the caching. Since the current controller manager requeues all objects every ten minutes by default the objects will be requeued shortly after its due time to be recached. This is because typically we expect to cache every 24 hours and it is very unexpected that this won't be frequent enough considering normal patch rates. When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a compute image gallery image, delete the snapshot, and then configure the AzureMachineTemplate specs to use that compute image gallery image. After, it will store the current time as its timestamp.
+The controller will maintain a timestamp in each AzureMachinePool and AzureMachineTemplate, and when the current time is the chosen interval ahead or more, the controller will perform the caching. Since the current controller manager requeues all objects every ten minutes by default the objects will be requeued shortly after its due time to be recached. This is because typically we expect to cache every 24 hours and it is very unexpected that this won't be frequent enough considering normal patch rates. 
 
 Example of how the timestamp will be maintained in the AzureMachinePool and AzureMachineTemplates:
 
@@ -125,21 +125,25 @@ status:
   lastPrototype: "2023-06-12T23:14:55Z"
 ```
 
-As for why the healthy node has to be shut down while creating a snapshot of it, if it isn’t shut down first then pods can be scheduled as the snapshot is taken which will cause some dangerous states in terms of how it exists after being utilized by the AzureMachineTemplates.
-
-In terms of how a healthy node would be selected, there is already state data present on each AzureMachinePoolMachine under spec.status which is latestModelApplied : true which is present when the node is up to date with user changes to the image. For AzureMachine instances, we would need to add this field. An ideal node would be one which has been patched since the last prototype went into service and is running and healthy. Whichever node has been running and healthy for the longest amount of time since the last patch and has the patch applied should be chosen as it’s the most overall stable. This means that for AzureMachinePoolMachines and AzureMachines we will take the node with the earliest creation time from metadata.creationTimestamp and has latestModelApplied : true present. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication.
+When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a compute image gallery image, delete the snapshot, and then configure the AzureMachineTemplate specs to use that compute image gallery image. After, it will store the current time as its timestamp.
 
 Diagram of the Node OS Caching Process:
 
 ![Figure 1](./images/node-os-image-cache.png)
 
-Example AzureMachinePool yaml with the timestamps in status:
+As for why the healthy node has to be shut down while creating a snapshot of it, if it isn’t shut down first then pods can be scheduled as the snapshot is taken which will cause some dangerous states in terms of how it exists after being utilized by the AzureMachineTemplates.
+
+In terms of how a healthy node would be selected, there is already state data present on each AzureMachinePoolMachine under spec.status which is latestModelApplied : true which is present when the node is up to date with user changes to the image. For AzureMachine instances, we would need to add this field. An ideal node would be one which has been patched since the last prototype went into service and is running and healthy. Whichever node has been running and healthy for the longest amount of time since the last patch and has the patch applied should be chosen as it’s the most overall stable. This means that for AzureMachinePoolMachines and AzureMachines we will take the node with the earliest creation time from metadata.creationTimestamp and has latestModelApplied : true present. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication.
+
+
+
+Example AzureMachinePoolMachine yaml with the timestamps in status:
 
 ```yaml
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AzureMachinePool
 metadata:
-  name: node-os-image-caching-machine-pool
+  name: node-os-image-caching-machine-pool-machine
   namespace: default
   creationTimestamp: "2023-06-20T17:41:54Z"
 status:
