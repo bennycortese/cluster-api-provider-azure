@@ -87,6 +87,7 @@ We will know we’ve succeeded when we can benchmark speed increases and success
 1. A more complicated method of selecting a good candidate node such as incorporating manual forced prototype creation, which would perform better but take research to find the optimal method
 1. Optimization of the default time interval into a specific, best general default which would have to be researched
 1. Automatic bad snapshot rollbacks since it will be hard to generically determine when a snapshot is bad currently
+1. Annotating the timestamp on each node of when it was updated with automatic security updates
 
 ## Proposal
 
@@ -133,11 +134,9 @@ Diagram of the Node OS Caching Process:
 
 As for why the healthy node has to be shut down while creating a snapshot of it, if it isn’t shut down first then pods can be scheduled as the snapshot is taken which will cause some dangerous states in terms of how it exists after being utilized by the AzureMachineTemplates.
 
-In terms of how a healthy node would be selected, there is already state data present on each AzureMachinePoolMachine under spec.status which is latestModelApplied : true which is present when the node is up to date with user changes to the image. For AzureMachine instances, we would need to add this field. An ideal node would be one which has been patched since the last prototype went into service and is running and healthy. Whichever node has been running and healthy for the longest amount of time since the last patch and has the patch applied should be chosen as it’s the most overall stable. This means that for AzureMachinePoolMachines and AzureMachines we will take the node with the earliest creation time from metadata.creationTimestamp and has latestModelApplied : true present. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication.
+In terms of how a healthy node would be selected, there is already state data present on each AzureMachinePoolMachine and AzureMachine which we can use and is listed in the examples below. An ideal node would be one which is running and healthy. Whichever node has been running and healthy for the longest amount of time since the last patch and has the patch applied should be chosen as it’s the most overall stable. This means that for AzureMachinePoolMachines and AzureMachines we will take the node with the earliest creation time from metadata.creationTimestamp and has latestModelApplied : true present if it is an AzureMachinePoolMachine. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication. In terms of knowing if the patch has been applied, for the first development of this feature we won't know but all nodes should roughly be patched together so it will be fine in most cases.
 
-
-
-Example AzureMachinePoolMachine yaml with the timestamps in status:
+Example AzureMachinePoolMachine yaml with the important fields shown (want status.ready == true, latestModelApplied: true and each status: "True"):
 
 ```yaml
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
@@ -158,11 +157,10 @@ status:
     status: "True"
     type: NodeHealthy
   latestModelApplied: true
-  provisioningState: Succeeded
   ready: true
 ```
 
-Example AzureMachine yaml with the proposed additional needed timestamps in status:
+Example AzureMachine yaml with the important fields shown (want status.ready == true and each status: "True"):
 
 ```yaml
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
@@ -170,19 +168,27 @@ kind: AzureMachine
 metadata:
   name: node-os-image-caching-machine
   namespace: default
+  creationTimestamp: "2023-06-20T17:38:39Z"
 status:
   conditions:
-  - lastTransitionTime: "2023-06-12T23:14:55Z"
+  - lastTransitionTime: "2023-06-20T17:41:16Z"
     status: "True"
-    type: ScaleSetModelUpdated
-  - lastTransitionTime: "2023-06-12T23:14:55Z"
+    type: Ready
+  - lastTransitionTime: "2023-06-20T17:41:16Z"
     status: "True"
-    type: ScaleSetRunning
+    type: BootstrapSucceeded
+  - lastTransitionTime: "2023-06-20T17:40:16Z"
+    status: "True"
+    type: DisksReady
+  - lastTransitionTime: "2023-06-20T17:40:16Z"
+    status: "True"
+    type: VMRunning
+  ready: true
 ```
 
 In terms of when to take a snapshot, a day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters.
 
-In terms of data model changes, AzureMachine, MachineDeployment and AzureMachinePool will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachineTemplate and AzureMachinePool we will add a new optional field under metadata.annotations called nodeCachingModeInterval which will be enabled if present and it will map to an interval of 1 day by default. For MachineDeployment and AzureMachinePool, we will add an optional field under spec.strategy.rollingUpdate called cacheAutomaticRollout which will be set to false by default since we don't want the replacement of a node OS image to automatically trigger a rolling update of all the nodes. This is because the new image will be functionally identical to the old one outside of name itself (since the old nodes will all have the update and security patch contents already present). If for some reason the operator wants to always trigger this rollout (maybe if they programatically use the image names themselves), then they can simply set this field to true.
+In terms of data model changes, AzureMachineTemplate and AzureMachinePool will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachineTemplate and AzureMachinePool we will add a new optional field under spec.template.image called nodePrototyping which will be enabled if present and it have a required field under it called interval which will map to an interval of 1 day or 24 hours by default. For AzureMachinePool, we will also add an optional field under spec.strategy.rollingUpdate called prototypeAutomaticRollout which will be set to false by default since we don't want the replacement of a node OS image to automatically trigger a rolling update of all the nodes. This is because the new image will be functionally identical to the old one outside of name itself (since the old nodes will all have the update and security patch contents already present). If for some reason the operator wants to always trigger this rollout (maybe if they programatically use the image names themselves), then they can simply set this field to true.
 
 Example AzureMachineTemplate yaml:
 ```yaml
@@ -213,23 +219,7 @@ spec:
       deletePolicy: Oldest
       maxSurge: 25%
       maxUnavailable: 1
-      cacheAutomaticRollout: false
-  type: RollingUpdate
-```
-
-Example MachineDeployment yaml:
-```yaml
-apiVersion: cluster.x-k8s.io/v1beta1
-kind: MachineDeployment
-metadata:
-  name: ${CLUSTER_NAME}-md-1
-  namespace: default
-spec:
-  rollingUpdate:
-      deletePolicy: Oldest
-      maxSurge: 25%
-      maxUnavailable: 1
-      cacheAutomaticRollout: false
+      prototypeAutomaticRollout: false
   type: RollingUpdate
 ```
 
@@ -257,7 +247,7 @@ In terms of rollout strategies, we could prevent exposing the strategy altogethe
 
 ## Upgrade Strategy
 
-Turning off or on the feature for a particular operator is done with them setting an environment variable to enable or disable it with clusterctl initialization. They will also be able to alter their AzureMachinePool and AzureMachineTemplate instances to add the feature or remove it and that is all that is required to keep previous behavior or make use of the enhancement. No backwards compatibility will be broken, all this feature request will do is change previous controllers and add optional fields to AzureMachinePool and AzureMachineTemplate which can be utilized or not as desired.
+Turning off or on the feature for a particular operator is done with them setting an environment variable to enable or disable it with clusterctl initialization. They will also be able to alter their AzureMachinePool and AzureMachineTemplate instances to add the feature or remove it and that is all that is required to keep previous behavior or make use of the enhancement. No backwards compatibility will be broken, all this feature request will do is change previous controllers and add optional fields to AzureMachinePool, and AzureMachineTemplate which can be utilized or not as desired.
 
 ## Additional Details
 
@@ -270,47 +260,15 @@ It should be tested primarily in isolation as other components shouldn’t affec
 
 ### Graduation Criteria [optional]
 
-Alpha:
+Experimental:
 
-The feature is initially constructed and toggleable with an environment variable
-
-Beta:
-
-The feature has e2e tests implemented and is more integrated and seamless with the project.
+The feature is initially constructed and toggleable with an environment variable. It will be implemented as described in this document and have e2e tests implemented and integrated in the project.
 
 Stable: 
 
 The feature has been used for a while and is widely acceptable as well as reliable and will now be enabled by default.
 
-For AzureMachineTemplate we will move the feature enabled specification from metadata.annotations to a new optional field under spec.template.spec called nodeCachingMode which will be enabled if present and a sub field under that called cacheInterval which will be set to 1 day by default, and it will be a required subfield of nodeCachingMode if that field is there. For AzureMachinePool we will do the same thing under spec.template in the AzureMachinePool files.
-
-Example AzureMachineTemplate yaml:
-```yaml
-apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
-kind: AzureMachineTemplate
-metadata:
-  name: node-os-image-caching-machine-template
-  namespace: default
-spec:
-  template:
-    image:
-      nodePrototyping:
-        interval: 24h
-```
-
-Example AzureMachinePool yaml:
-```yaml
-apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
-kind: AzureMachinePool
-metadata:
-  name: node-os-image-caching-machine-pool
-  namespace: default
-spec:
-  template:
-    image:
-      nodePrototyping:
-        interval: 24h
-```
+At this point a more sophisticated method of choosing a healthy node will be used, preferrably by annotating the AzureMachine and AzureMachinePoolMachine instances after every patch. This will allow for more optimization and fewer unnecessary uses of this operation as if no updates in the interval are needed we would be able to now properly know. 
 
 
 ### Version Skew Strategy [optional]
