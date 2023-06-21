@@ -12,14 +12,14 @@ SnapshotChosenNode : Create a snapshot of the node's disk (OS Image)
 SnapshotChosenNode --> RestartChosenNode
 
 RestartChosenNode : Restart the node so it can continue operating in the cluster as it was
-RestartChosenNode --> CreateSharedImageGalleryImage
+RestartChosenNode --> CreateComputeImageGalleryImage
 
-CreateSharedImageGalleryImage : Create a shared image gallery image from the snapshot
-CreateSharedImageGalleryImage --> DeleteSnapshot
+CreateComputeImageGalleryImage : Create a compute image gallery image from the snapshot
+CreateComputeImageGalleryImage --> DeleteSnapshot
 
 DeleteSnapshot : Delete the snapshot
 DeleteSnapshot --> ConfigureAzureMachineTemplate
 
-ConfigureAzureMachineTemplate : Configure the AzureMachineTemplates to use the new Shared Image Gallery Image
+ConfigureAzureMachineTemplate : Configure the AzureMachineTemplates to use the new Compute Image Gallery Image
 
 @enduml
