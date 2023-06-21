@@ -88,6 +88,7 @@ We will know we’ve succeeded when we can benchmark speed increases and success
 1. Optimization of the default time interval into a specific, best general default which would have to be researched
 1. Automatic bad snapshot rollbacks since it will be hard to generically determine when a snapshot is bad currently
 1. Annotating the timestamp on each node of when it was updated with automatic security updates
+1. Allow the feature to be enabled for any type of image (marketplace or custom with ID)
 
 ## Proposal
 
@@ -126,7 +127,7 @@ status:
   lastPrototype: "2023-06-12T23:14:55Z"
 ```
 
-When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a compute image gallery image, delete the snapshot, and then configure the AzureMachineTemplate specs to use that compute image gallery image. After, it will store the current time as its timestamp.
+When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a compute image gallery image, delete the snapshot, and then configure the AzureMachineTemplate specs to use that compute image gallery image. After, it will store the current time as its timestamp. As a note, for the first implementation of this feature we will require the user to also use a compute image gallery image.
 
 Diagram of the Node OS Caching Process:
 
