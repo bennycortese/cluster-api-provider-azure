@@ -233,6 +233,16 @@ Example risks:
 1. A bad snapshot is taken, and we will mitigate this risk by having trying to prevent it before it happens by checking if things are ready and draining everything before taking the snapshot. Rolling back and determining if a bad shapshot is bad is out of scope for this proposal currently and will be for the operator to watch, so here we will simply try to prevent it as best as we can.
 1. A bad security patch or update might have been applied to a user’s node that they don’t want to be applied to future nodes. To mitigate this risk, we will make it easy for users to turn this feature off, and if they fix it on their original node the snapshot will be taken of that node instead.
 
+The following limits exist for Azure Compute Galleries:
+1. 100 galleries, per subscription, per region
+1. 1,000 image definitions, per subscription, per region
+1. 10,000 image versions, per subscription, per region
+1. 100 replicas per image version however 50 replicas should be sufficient for most use cases
+1. Any disk attached to the image must be less than or equal to 1 TB in size
+1. Resource move isn't supported for Azure compute gallery resources
+
+Thus the feature will not work for OS images with disks attached greater than 1 TB in size. These limits should be kept in mind by the operator since this feature requires the use of an Azure Compute Gallery. The Azure Compute Gallery itself costs no money. For each image, it costs roughly $0.10 - $0.13 for a CAPI image per region and $0.1 - $0.3 for a plain Flatcar image per region with the Standard HDD LRS storage account type. Scaling across other regions will also accrue network egress charges. Thus, the feature may cost the operator more money if they don't need faster horizontal scaling.
+
 The UX will mostly be impactful towards operators and members of the CAPZ community will test these changes and give feedback on them. Security will also likely follow in terms of how it gets reviewed, but no major security problems should be possible from this change. For folks who work outside the SIG or subproject, they should hopefully have faster horizontal scaling without needing to directly do anything outside of setting an environment variable on clusterctl initialization and updating their AzureMachinePools and AzureMachineTemplates.
 
 
@@ -269,7 +279,8 @@ Stable:
 
 The feature has been used for a while and is widely acceptable as well as reliable and will now be enabled by default.
 
-At this point a more sophisticated method of choosing a healthy node will be used, preferrably by annotating the AzureMachine and AzureMachinePoolMachine instances after every patch. This will allow for more optimization and fewer unnecessary uses of this operation as if no updates in the interval are needed we would be able to now properly know. 
+At this point a more sophisticated method of choosing a healthy node will be used, preferrably by annotating the AzureMachine and AzureMachinePoolMachine instances after every patch. This will allow for more optimization and fewer unnecessary uses of this operation as if no updates in the interval are needed we would be able to now properly know.
+
 
 
 ### Version Skew Strategy [optional]
