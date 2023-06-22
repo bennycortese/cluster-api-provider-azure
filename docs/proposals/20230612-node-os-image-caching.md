@@ -242,6 +242,8 @@ The following limits exist for Azure Compute Galleries:
 1. Any disk attached to the image must be less than or equal to 1 TB in size
 1. Resource move isn't supported for Azure compute gallery resources
 
+Link to page with Azure Compute Gallery limits: https://learn.microsoft.com/en-us/azure/virtual-machines/azure-compute-gallery
+
 Thus the feature will not work for OS images with disks attached greater than 1 TB in size. These limits should be kept in mind by the operator since this feature requires the use of an Azure Compute Gallery. The Azure Compute Gallery itself costs no money. For each image, it costs roughly $0.10 - $0.13 for a CAPI image per region and $0.1 - $0.3 for a plain Flatcar image per region with the Standard HDD LRS storage account type every day. Scaling across other regions will also accrue network egress charges. Thus, the feature may cost the operator more money if they don't need faster horizontal scaling.
 
 The UX will mostly be impactful towards operators and members of the CAPZ community will test these changes and give feedback on them. Security will also likely follow in terms of how it gets reviewed, but no major security problems should be possible from this change. For folks who work outside the SIG or subproject, they should hopefully have faster horizontal scaling without needing to directly do anything outside of setting an environment variable on clusterctl initialization and updating their AzureMachinePools and AzureMachineTemplates.
