@@ -160,9 +160,31 @@ A day is given as a general example which should be good for typical use but the
 
 #### Data model changes
 
+<<<<<<< HEAD
 `AzureMachinePool` will be changed and the proposed changes are purely additive and nonbreaking. No removals should be required to the data model. For `AzureMachinePool` we will add a new optional field under `spec.template.image` called `nodePrototyping` which will be enabled if present and it have a required field under it called interval which will map to an interval of 1 day or 24 hours by default.
 
 Example `AzureMachinePool` yaml:
+=======
+In terms of data model changes, AzureMachineTemplate and AzureMachinePool will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachineTemplate and AzureMachinePool we will add a new optional field under spec.template.image called nodePrototyping which will be enabled if present and it have a required field under it called interval which will map to an interval of 1 day or 24 hours by default.
+
+Example AzureMachineTemplate yaml:
+```yaml
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AzureMachineTemplate
+metadata:
+  name: node-os-image-caching-machine-template
+  namespace: default
+spec:
+  template:
+    image:
+      nodePrototyping:
+        interval: 24h
+```
+
+For AzureMachinePool, we will also add an optional field under spec.strategy.rollingUpdate called prototypeAutomaticRollout which will be set to false by default since we don't want the replacement of a node OS image to automatically trigger a rolling update of all the nodes. This is because the new image will be functionally identical to the old one outside of name itself (since the old nodes will all have the update and security patch contents already present). If for some reason the operator wants to always trigger this rollout (maybe if they programatically use the image names themselves), then they can simply set this field to true.
+
+Example AzureMachinePool yaml:
+>>>>>>> 0e50070c (Moved data model changes around a bit to follow a more seperate blocking of them with YAML examples after, all AzureMachineTemplate changes are currently a subset of AzureMachinePool changes so it's slightly clunky)
 ```yaml
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AzureMachinePool
