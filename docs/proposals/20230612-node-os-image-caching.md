@@ -279,7 +279,7 @@ Stable:
 
 The feature has been used for a while and is widely acceptable as well as reliable and will now be enabled by default.
 
-At this point a more sophisticated method of choosing a healthy node will be used, preferrably by annotating the AzureMachine and AzureMachinePoolMachine instances after every patch. This will allow for more optimization and fewer unnecessary uses of this operation as if no updates in the interval are needed we would be able to now properly know.
+At this point a more sophisticated method of choosing a healthy node will be used, preferably by annotating the AzureMachine and AzureMachinePoolMachine instances after every patch. This will allow for more optimization and fewer unnecessary uses of this operation as if no updates in the interval are needed we would be able to now properly know.
 
 ### Version Skew Strategy [optional]
 
