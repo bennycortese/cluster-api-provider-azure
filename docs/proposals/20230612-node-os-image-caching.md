@@ -58,7 +58,11 @@ This proposal introduces modifications to the `AzureMachinePool` controller for 
 
 ## Motivation
 
+<<<<<<< HEAD
 We want users to have faster horizontal scaling and require fewer warm nodes and overprovisioning to avoid this problem, especially since the new nodes will have the container images of the applications it will run pre-cached so pods will run quicker when scheduled. This feature will also help users have better security compliance as new nodes will already be compliant instead of needing to patch.
+=======
+A model scenario would be an operator spinning up a CAPZ cluster and having this feature be able to be toggled on or off. If it was toggled on, then as the months passed and more security updates and patches needed to be applied to the operator’s node OS image, these changes would be cached on a regular interval and the operator would no longer have to wait for these changes to apply on new node creations. Operators will also have the option of immediately propagating updates to nodes according to a RollingUpdate configuration or rely on the dynamic nature of the cluster to scale in updated nodes as needed by toggling a configuration. As a result, users will have faster horizontal scaling and require fewer warm nodes and overprovisioning to avoid this problem, especially since the new nodes will have the container images of the applications it will run pre-cached so pods will run quicker when scheduled. This feature will also help users have better security compliance as new nodes will already be compliant instead of needing to patch.
+>>>>>>> 9249a9b7 (Yet another spacing diff)
 
 ### Goals
 
