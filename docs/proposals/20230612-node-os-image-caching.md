@@ -112,7 +112,7 @@ The plan is to modify the existing Controllers with the Node Prototype Pattern a
 
 An operator will be able to decide to turn the feature on or off with an environment variable on clusterctl initialization, and then on a cluster by cluster basis can alter the AzureMachineTemplates and AzureMachinePools to specify the use of the feature. They can also update the AzureMachineTemplate and AzureMachinePool to customize how long they want the caching interval to be (see the yaml files below in this section for the caching interval).
 
-Example of the enviornment variable being turned on:
+Example of the environment variable being turned on:
 
 ```
 export AZURE_OS_CACHING=true
