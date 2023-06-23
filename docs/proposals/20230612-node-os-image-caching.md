@@ -185,7 +185,7 @@ spec:
         interval: 24h
 ```
 
-For AzureMachinePool, we will also add an optional field under spec.strategy.rollingUpdate called prototypeAutomaticRollout which will be set to false by default since we don't want the replacement of a node OS image to automatically trigger a rolling update of all the nodes. This is because the new image will be functionally identical to the old one outside of name itself (since the old nodes will all have the update and security patch contents already present). If for some reason the operator wants to always trigger this rollout (maybe if they programatically use the image names themselves), then they can simply set this field to true.
+For AzureMachinePool, we will also add an optional field under spec.strategy.rollingUpdate called prototypeAutomaticRollout which will be set to false by default since we don't want the replacement of a node OS image to automatically trigger a rolling update of all the nodes. This is because the new image will be functionally identical to the old one outside of name itself (since the old nodes will all have the update and security patch contents already present). If for some reason the operator wants to always trigger this rollout (maybe if they programmatically use the image names themselves), then they can simply set this field to true.
 
 Example AzureMachinePool yaml:
 >>>>>>> 0e50070c (Moved data model changes around a bit to follow a more seperate blocking of them with YAML examples after, all AzureMachineTemplate changes are currently a subset of AzureMachinePool changes so it's slightly clunky)
