@@ -92,12 +92,6 @@ const (
 )
 
 const (
-	// ProviderIDPrefix will be appended to the beginning of Azure resource IDs to form the Kubernetes Provider ID.
-	// NOTE: this format matches the 2 slashes format used in cloud-provider and cluster-autoscaler.
-	ProviderIDPrefix = "azure://"
-)
-
-const (
 	// CustomHeaderPrefix is the prefix of annotations that enable additional cluster / node pool features.
 	// Whatever follows the prefix will be passed as a header to cluster/node pool creation/update requests.
 	// E.g. add `"infrastructure.cluster.x-k8s.io/custom-header-UseGPUDedicatedVHD": "true"` annotation to

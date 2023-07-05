@@ -29,12 +29,20 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	"sigs.k8s.io/cluster-api-provider-azure/azure"
+	"sigs.k8s.io/cluster-api-provider-azure/util/maps"
 	"sigs.k8s.io/cluster-api-provider-azure/util/tele"
 	"sigs.k8s.io/cluster-api/util/patch"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
+	// ReconcilePolicyAnnotation is the annotation key for ASO's reconcile policy mechanism.
+	ReconcilePolicyAnnotation = "serviceoperator.azure.com/reconcile-policy"
+	// ReconcilePolicySkip indicates changes will not be PUT or DELETEd in Azure from ASO.
+	ReconcilePolicySkip = "skip"
+	// ReconcilePolicyManage indicates changes will be PUT and DELETEd in Azure from ASO.
+	ReconcilePolicyManage = "manage"
+
 	requeueInterval = 20 * time.Second
 
 	createOrUpdateFutureType = "ASOCreateOrUpdate"
@@ -45,12 +53,15 @@ const (
 // and deletion of resources using ASO.
 type Service struct {
 	client.Client
+
+	clusterName string
 }
 
 // New creates a new ASO service.
-func New(ctrlClient client.Client) *Service {
+func New(ctrlClient client.Client, clusterName string) *Service {
 	return &Service{
-		Client: ctrlClient,
+		Client:      ctrlClient,
+		clusterName: clusterName,
 	}
 }
 
@@ -66,6 +77,7 @@ func (s *Service) CreateOrUpdateResource(ctx context.Context, spec azure.ASOReso
 
 	log = log.WithValues("service", serviceName, "resource", resourceName, "namespace", resourceNamespace)
 
+	var adopt bool
 	var existing genruntime.MetaObject
 	if err := s.Client.Get(ctx, client.ObjectKeyFromObject(resource), resource); err != nil {
 		if !apierrors.IsNotFound(err) {
@@ -74,6 +86,11 @@ func (s *Service) CreateOrUpdateResource(ctx context.Context, spec azure.ASOReso
 	} else {
 		existing = resource
 		log.V(2).Info("successfully got existing resource")
+
+		if !ownedByCluster(existing.GetLabels(), s.clusterName) {
+			log.V(4).Info("skipping reconcile for unmanaged resource")
+			return existing, nil
+		}
 
 		// Check if there is an ongoing long running operation.
 		conds := existing.GetConditions()
@@ -84,6 +101,19 @@ func (s *Service) CreateOrUpdateResource(ctx context.Context, spec azure.ASOReso
 		var readyErr error
 		if cond := conds[i]; cond.Status != metav1.ConditionTrue {
 			switch {
+			case cond.Reason == conditions.ReasonAzureResourceNotFound.Name &&
+				existing.GetAnnotations()[ReconcilePolicyAnnotation] == ReconcilePolicySkip:
+				// This resource was originally created by CAPZ and a
+				// corresponding Azure resource has been found not to exist, so
+				// CAPZ will tell ASO to adopt the resource by setting its
+				// reconcile policy to "manage". This extra step is necessary to
+				// handle user-managed resources that already exist in Azure and
+				// should not be reconciled by ASO while ensuring they're still
+				// represented in ASO.
+				log.V(2).Info("resource not found in Azure and \"skip\" reconcile-policy set, adopting")
+				// Don't set readyErr so the resource can be adopted with an
+				// update instead of returning early.
+				adopt = true
 			case cond.Reason == conditions.ReasonReconciling.Name:
 				readyErr = azure.NewOperationNotDoneError(&infrav1.Future{
 					Type:          createOrUpdateFutureType,
@@ -119,6 +149,31 @@ func (s *Service) CreateOrUpdateResource(ctx context.Context, spec azure.ASOReso
 
 	parameters.SetName(resourceName)
 	parameters.SetNamespace(resourceNamespace)
+
+	labels := make(map[string]string)
+	annotations := make(map[string]string)
+
+	if existing == nil {
+		labels[infrav1.OwnedByClusterLabelKey] = s.clusterName
+		// Create the ASO resource with "skip" in case a matching resource
+		// already exists in Azure, in which case CAPZ will assume it is managed
+		// by the user and ASO should not actively reconcile changes to the ASO
+		// resource. In the canonical "entirely managed by CAPZ" case, the next
+		// reconciliation will reveal the resource does not already exist in
+		// Azure and the ASO resource will be adopted by changing this
+		// annotation to "manage".
+		annotations[ReconcilePolicyAnnotation] = ReconcilePolicySkip
+	}
+	if adopt {
+		annotations[ReconcilePolicyAnnotation] = ReconcilePolicyManage
+	}
+
+	if len(labels) > 0 {
+		parameters.SetLabels(maps.Merge(parameters.GetLabels(), labels))
+	}
+	if len(annotations) > 0 {
+		parameters.SetAnnotations(maps.Merge(parameters.GetAnnotations(), annotations))
+	}
 
 	diff := cmp.Diff(existing, parameters)
 	if diff == "" {
@@ -164,6 +219,20 @@ func (s *Service) DeleteResource(ctx context.Context, spec azure.ASOResourceSpec
 
 	log = log.WithValues("service", serviceName, "resource", resourceName, "namespace", resourceNamespace)
 
+	managed, err := IsManaged(ctx, s.Client, spec, s.clusterName)
+	if apierrors.IsNotFound(err) {
+		// already deleted
+		log.V(2).Info("successfully deleted resource")
+		return nil
+	}
+	if err != nil {
+		return errors.Wrap(err, "failed to determine if resource is managed")
+	}
+	if !managed {
+		log.V(4).Info("skipping delete for unmanaged resource")
+		return nil
+	}
+
 	log.V(2).Info("deleting resource")
 	err = s.Client.Delete(ctx, resource)
 	if err != nil {
@@ -187,4 +256,23 @@ func deepCopyOrNil(obj genruntime.MetaObject) genruntime.MetaObject {
 		return nil
 	}
 	return obj.DeepCopyObject().(genruntime.MetaObject)
+}
+
+// IsManaged returns whether the ASO resource referred to by spec was created by
+// CAPZ and therefore whether CAPZ should manage its lifecycle.
+func IsManaged(ctx context.Context, ctrlClient client.Client, spec azure.ASOResourceSpecGetter, clusterName string) (bool, error) {
+	ctx, _, done := tele.StartSpanWithLogger(ctx, "aso.Service.IsManaged")
+	defer done()
+
+	resource := spec.ResourceRef()
+	err := ctrlClient.Get(ctx, client.ObjectKeyFromObject(resource), resource)
+	if err != nil {
+		return false, errors.Wrap(err, "error getting resource")
+	}
+
+	return ownedByCluster(resource.GetLabels(), clusterName), nil
+}
+
+func ownedByCluster(labels map[string]string, clusterName string) bool {
+	return labels[infrav1.OwnedByClusterLabelKey] == clusterName
 }

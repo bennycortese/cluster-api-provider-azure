@@ -68,8 +68,8 @@ func InstallCalicoAndCloudProviderAzureHelmChart(ctx context.Context, input clus
 	clusterProxy := input.ClusterProxy.GetWorkloadCluster(ctx, input.ConfigCluster.Namespace, input.ConfigCluster.ClusterName)
 	InstallHelmChart(ctx, clusterProxy, defaultNamespace, cloudProviderAzureHelmRepoURL, cloudProviderAzureChartName, cloudProviderAzureHelmReleaseName, options, "")
 
-	// Install Calico CNI Helm Chart. We do this before waiting for the pods to be ready because there is a co-dependency between CNI (nodes ready) and cloud-provider being initialized.
-	InstallCalicoHelmChart(ctx, input, cidrBlocks, hasWindows)
+	// We do this before waiting for the pods to be ready because there is a co-dependency between CNI (nodes ready) and cloud-provider being initialized.
+	InstallCNI(ctx, input, cidrBlocks, hasWindows)
 
 	By("Waiting for Ready cloud-controller-manager deployment pods")
 	for _, d := range []string{"cloud-controller-manager"} {
@@ -87,7 +87,7 @@ func InstallAzureDiskCSIDriverHelmChart(ctx context.Context, input clusterctl.Ap
 	}
 	// TODO: make this always true once HostProcessContainers are on for all supported k8s versions.
 	if hasWindows {
-		options.Values = append(options.Values, "windows.useHostProcessContainers=true")
+		options.Values = append(options.Values, "windows.useHostProcessContainers=false")
 	}
 	clusterProxy := input.ClusterProxy.GetWorkloadCluster(ctx, input.ConfigCluster.Namespace, input.ConfigCluster.ClusterName)
 	InstallHelmChart(ctx, clusterProxy, kubesystem, azureDiskCSIDriverHelmRepoURL, azureDiskCSIDriverChartName, azureDiskCSIDriverHelmReleaseName, options, "")
