@@ -115,10 +115,13 @@ spec:
         advertiseAddress: '::'
         bindPort: 6443
       nodeRegistration:
+        ignorePreflightErrors:
+        - all
         kubeletExtraArgs:
           azure-container-registry-config: /etc/kubernetes/azure.json
           cloud-provider: external
           cluster-dns: fd00::10
+          v: 5
         name: '{{ ds.meta_data["local_hostname"] }}'
     joinConfiguration:
       controlPlane:

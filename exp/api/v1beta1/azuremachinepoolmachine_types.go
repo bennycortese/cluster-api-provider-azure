@@ -95,8 +95,10 @@ type (
 		LatestModelApplied bool `json:"latestModelApplied,omitempty"`
 
 		// Ready is true when the provider resource is ready.
-		// +optional
 		Ready bool `json:"ready"`
+
+		// LastPrototype holds a timestamp of the last time a prototype gets saved and rolled out
+		LastPrototype string `json:"lastPrototype,omitempty"`
 	}
 
 	// +kubebuilder:object:root=true
@@ -108,6 +110,7 @@ type (
 	// +kubebuilder:printcolumn:name="Cluster",type="string",priority=1,JSONPath=".metadata.labels.cluster\\.x-k8s\\.io/cluster-name",description="Cluster to which this AzureMachinePoolMachine belongs"
 	// +kubebuilder:printcolumn:name="VMSS VM ID",type="string",priority=1,JSONPath=".spec.providerID",description="Azure VMSS VM ID"
 	// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="Time duration since creation of this AzureMachinePoolMachine"
+	// +kubebuilder:printcolumn:name="LastPrototype",type="string",JSONPath=".status.lastPrototype",description="lastPrototypeTimestamp"
 	// +kubebuilder:storageversion
 
 	// AzureMachinePoolMachine is the Schema for the azuremachinepoolmachines API.

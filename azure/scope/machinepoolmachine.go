@@ -339,7 +339,12 @@ func (s *MachinePoolMachineScope) UpdateNodeStatus(ctx context.Context) error {
 			APIVersion: node.APIVersion,
 		}
 
-		s.AzureMachinePoolMachine.Status.Version = node.Status.NodeInfo.KubeletVersion
+		s.AzureMachinePoolMachine.Status.LastPrototype = "24h"
+		//log.V(4).Info("habe a good day!")
+		if s.AzureMachinePoolMachine.Annotations == nil {
+			s.AzureMachinePoolMachine.Annotations = map[string]string{}
+		}
+		s.AzureMachinePoolMachine.Annotations["roar"] = "ok"
 	}
 
 	return nil

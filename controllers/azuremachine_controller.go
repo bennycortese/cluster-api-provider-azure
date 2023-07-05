@@ -248,11 +248,10 @@ func (amr *AzureMachineReconciler) reconcileNormal(ctx context.Context, machineS
 	}
 
 	// If the AzureMachine doesn't have our finalizer, add it.
-	if controllerutil.AddFinalizer(machineScope.AzureMachine, infrav1.MachineFinalizer) {
-		// Register the finalizer immediately to avoid orphaning Azure resources on delete
-		if err := machineScope.PatchObject(ctx); err != nil {
-			return reconcile.Result{}, err
-		}
+	controllerutil.AddFinalizer(machineScope.AzureMachine, infrav1.MachineFinalizer)
+	// Register the finalizer immediately to avoid orphaning Azure resources on delete
+	if err := machineScope.PatchObject(ctx); err != nil {
+		return reconcile.Result{}, err
 	}
 
 	// Make sure the Cluster Infrastructure is ready.

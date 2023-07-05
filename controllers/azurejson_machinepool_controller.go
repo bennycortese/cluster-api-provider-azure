@@ -107,6 +107,7 @@ func (r *AzureJSONMachinePoolReconciler) Reconcile(ctx context.Context, req ctrl
 
 	// Fetch the AzureMachine instance
 	azureMachinePool := &infrav1exp.AzureMachinePool{}
+	
 	err := r.Get(ctx, req.NamespacedName, azureMachinePool)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
