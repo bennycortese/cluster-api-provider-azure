@@ -344,8 +344,12 @@ func (s *MachinePoolMachineScope) UpdateNodeStatus(ctx context.Context) error {
 			s.AzureMachinePoolMachine.Annotations = map[string]string{}
 		}
 		s.AzureMachinePoolMachine.Annotations["roar"] = "ok"
-		s.AzureMachinePoolMachine.Status.LastPrototype = "24h"
-		s.AzureMachinePool.Status.LastPrototype = "24h"
+		
+		curTime := time.Now().UTC()
+		layout := "2006-01-02T15:04:05Z"
+		timestamp := curTime.Format(layout)
+		s.AzureMachinePoolMachine.Status.LastPrototype = timestamp
+		s.AzureMachinePool.Status.LastPrototype = timestamp
 	}
 
 	return nil
