@@ -308,6 +308,10 @@ type (
 		// next reconciliation loop.
 		// +optional
 		LongRunningOperationStates infrav1.Futures `json:"longRunningOperationStates,omitempty"`
+
+		// LastPrototype saves the timestamp of the last prototype taken so we can know how long before rechecking for changes
+		// +optional
+		LastPrototype string `json:"lastPrototype,omitempty"`
 	}
 
 	// AzureMachinePoolInstanceStatus provides status information for each instance in the VMSS.

@@ -164,6 +164,42 @@ func (ampr *AzureMachinePoolReconciler) SetupWithManager(ctx context.Context, mg
 // +kubebuilder:rbac:groups="",resources=secrets;,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=nodes,verbs=get;list;watch
 
+
+func (amp *AzureMachinePool) PrototypeProcess() {
+	NameSpace := amp.Namespace
+	machinePoolName := amp.Name
+
+	timestampDiff := "24h"
+	if(timestampDiff == "24h")
+	{
+		replicaCount := amp.Status.Replicas
+
+		healthyAmpm := &infrav1exp.AzureMachinePoolMachine{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: NameSpace,
+				Name:      "-1",
+			},
+		}
+
+		curInstanceID := strconv.Itoa(0)
+
+		for i := 0; i < int(replicaCount); i++ { // step 1
+			healthyAmpm = &infrav1exp.AzureMachinePoolMachine{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: NameSpace,
+					Name:      machinePoolName + "-" + strconv.Itoa(i),
+				},
+			}
+			curInstanceID = strconv.Itoa(i)
+			err = c.Get(ctx, client.ObjectKeyFromObject(healthyAmpm), healthyAmpm)
+			if err != nil {
+				panic(err)
+			}	
+		}
+	
+	}
+}
+
 // Reconcile idempotently gets, creates, and updates a machine pool.
 func (ampr *AzureMachinePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (_ ctrl.Result, reterr error) {
 	ctx, logger, done := tele.StartSpanWithLogger(
