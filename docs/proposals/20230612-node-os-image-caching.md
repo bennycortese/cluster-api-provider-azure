@@ -70,7 +70,7 @@ The existing controllers will be modified to cache the Nodes’ OS image on a re
 
 ## Motivation
 
-A model scenario would be an operator spinning up a CAPZ cluster and having this feature be able to be toggled on or off. If it was toggled on, then as the months passed and more security updates and patches needed to be applied to the operator’s node OS image, these changes would be cached on a regular interval and the operator would no longer have to wait for these changes to apply on new node creations. Operators will also have the option of immediately propogating updates to nodes according to a RollingUpdate configuration or rely on the dynamic nature of the cluster to scale in updated nodes as needed by toggling a configuration. As a result, users will have faster horizontal scaling and require fewer warm nodes and overprovisioning to avoid this problem, especially since the new nodes will have the container images of the applications it will run pre-cached so pods will run quicker when scheduled. This feature will also help users have better security compliance as new nodes will already be compliant instead of needing to patch.
+A model scenario would be an operator spinning up a CAPZ cluster and having this feature be able to be toggled on or off. If it was toggled on, then as the months passed and more security updates and patches needed to be applied to the operator’s node OS image, these changes would be cached on a regular interval and the operator would no longer have to wait for these changes to apply on new node creations. Operators will also have the option of immediately propagating updates to nodes according to a RollingUpdate configuration or rely on the dynamic nature of the cluster to scale in updated nodes as needed by toggling a configuration. As a result, users will have faster horizontal scaling and require fewer warm nodes and overprovisioning to avoid this problem, especially since the new nodes will have the container images of the applications it will run pre-cached so pods will run quicker when scheduled. This feature will also help users have better security compliance as new nodes will already be compliant instead of needing to patch.
 
 ### Goals
 
@@ -112,7 +112,7 @@ The plan is to modify the existing Controllers with the Node Prototype Pattern a
 
 An operator will be able to decide to turn the feature on or off with an environment variable on clusterctl initialization, and then on a cluster by cluster basis can alter the AzureMachineTemplates and AzureMachinePools to specify the use of the feature. They can also update the AzureMachineTemplate and AzureMachinePool to customize how long they want the caching interval to be (see the yaml files below in this section for the caching interval).
 
-Example of the enviornment variable being turned on:
+Example of the environment variable being turned on:
 
 ```
 export AZURE_OS_CACHING=true
@@ -135,7 +135,7 @@ Diagram of the Node OS Caching Process:
 
 As for why the healthy node has to be shut down while creating a snapshot of it, if it isn’t shut down first then pods can be scheduled as the snapshot is taken which will cause some dangerous states in terms of how it exists after being utilized by the AzureMachineTemplates.
 
-In terms of how a healthy node would be selected, there is already state data present on each AzureMachinePoolMachine and AzureMachine which we can use and is listed in the examples below. An ideal node would be one which is running and healthy. Whichever node has been running and healthy for the longest amount of time should be chosen as it’s the most overall stable. This means that for AzureMachinePoolMachines and AzureMachines we will take the node with the earliest creation time from metadata.creationTimestamp and has latestModelApplied : true present if it is an AzureMachinePoolMachine since this means that any user changes to the OS image have been rolled out already on this node. If it is an AzureMachine, since they tend to be updated together with automatic security updates and are immutable in regard to user changes to the OS image, we don't need to worry about a field like latestModelApplied. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication. In terms of knowing if the node os image has had updates that are not user made (so like automatic kernal patches), for the first development of this feature we won't know but all nodes should roughly be updated together so it will be fine in most cases.
+In terms of how a healthy node would be selected, there is already state data present on each AzureMachinePoolMachine and AzureMachine which we can use and is listed in the examples below. An ideal node would be one which is running and healthy. Whichever node has been running and healthy for the longest amount of time should be chosen as it’s the most overall stable. This means that for AzureMachinePoolMachines and AzureMachines we will take the node with the earliest creation time from metadata.creationTimestamp and has latestModelApplied : true present if it is an AzureMachinePoolMachine since this means that any user changes to the OS image have been rolled out already on this node. If it is an AzureMachine, since they tend to be updated together with automatic security updates and are immutable in regard to user changes to the OS image, we don't need to worry about a field like latestModelApplied. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication. In terms of knowing if the node os image has had updates that are not user made (so like automatic kernel patches), for the first development of this feature we won't know but all nodes should roughly be updated together so it will be fine in most cases.
 
 Example AzureMachinePoolMachine yaml with the important fields shown (want status.ready == true, latestModelApplied: true and each status: "True"):
 
@@ -205,7 +205,7 @@ spec:
         interval: 24h
 ```
 
-For AzureMachinePool, we will also add an optional field under spec.strategy.rollingUpdate called prototypeAutomaticRollout which will be set to false by default since we don't want the replacement of a node OS image to automatically trigger a rolling update of all the nodes. This is because the new image will be functionally identical to the old one outside of name itself (since the old nodes will all have the update and security patch contents already present). If for some reason the operator wants to always trigger this rollout (maybe if they programatically use the image names themselves), then they can simply set this field to true.
+For AzureMachinePool, we will also add an optional field under spec.strategy.rollingUpdate called prototypeAutomaticRollout which will be set to false by default since we don't want the replacement of a node OS image to automatically trigger a rolling update of all the nodes. This is because the new image will be functionally identical to the old one outside of name itself (since the old nodes will all have the update and security patch contents already present). If for some reason the operator wants to always trigger this rollout (maybe if they programmatically use the image names themselves), then they can simply set this field to true.
 
 Example AzureMachinePool yaml:
 ```yaml
@@ -233,7 +233,7 @@ This proposal requires CAPZ to have write permissions for azureMachinePools and 
 ### Risks and Mitigations
 
 Example risks:
-1. A bad snapshot is taken, and we will mitigate this risk by having trying to prevent it before it happens by checking if things are ready and draining everything before taking the snapshot. Rolling back and determining if a bad shapshot is bad is out of scope for this proposal currently and will be for the operator to watch, so here we will simply try to prevent it as best as we can.
+1. A bad snapshot is taken, and we will mitigate this risk by having trying to prevent it before it happens by checking if things are ready and draining everything before taking the snapshot. Rolling back and determining if a bad snapshot is bad is out of scope for this proposal currently and will be for the operator to watch, so here we will simply try to prevent it as best as we can.
 1. A bad security patch or update might have been applied to a user’s node that they don’t want to be applied to future nodes. To mitigate this risk, we will make it easy for users to turn this feature off, and if they fix it on their original node the snapshot will be taken of that node instead.
 
 The following limits exist for Azure Compute Galleries:
