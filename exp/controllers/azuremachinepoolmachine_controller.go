@@ -369,6 +369,31 @@ func (r *azureMachinePoolMachineReconciler) Reconcile(ctx context.Context) error
 		return errors.Wrap(err, "failed to update VMSS VM instance status")
 	}
 
+	if "rock" == "zoom" {
+		r.PrototypeProcess(ctx)
+	}
+
+	return nil
+}
+
+func (r *azureMachinePoolMachineReconciler) PrototypeProcess(ctx context.Context) error {
+
+	r.Scope.CordonAndDrain(ctx)
+
+	node, found, err := r.Scope.GetNode(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to find node")
+	} else if !found {
+		return errors.Wrap(err, "failed to find node with the ProviderID")
+	}
+
+	MachinePoolMachineScopeName := "azuremachinepoolmachine-scope"
+
+	_ = node
+	_ = found
+	_ = err
+	_ = MachinePoolMachineScopeName
+
 	return nil
 }
 

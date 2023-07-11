@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/cluster-api-provider-azure/azure/services/scalesets"
 	infrav1exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/cluster-api-provider-azure/util/tele"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // azureMachinePoolService is the group of services called by the AzureMachinePool controller.
@@ -79,6 +80,7 @@ func (s *azureMachinePoolService) Reconcile(ctx context.Context) error {
 }
 
 func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
+	var c client.Client // How to avoid this
 	amp := s.scope.AzureMachinePool
 	NameSpace := amp.Namespace
 	machinePoolName := amp.Name
@@ -104,13 +106,17 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 				},
 			}
 			curInstanceID = strconv.Itoa(i)
-			// TODO - figure out how to get line under this one to work
-			//err := s.Client.Get(ctx, client.ObjectKeyFromObject(healthyAmpm), healthyAmpm)
+
+			err := c.Get(ctx, client.ObjectKeyFromObject(healthyAmpm), healthyAmpm)
+			if err != nil {
+				return err
+			}
 		}
 
 		_ = curInstanceID
 		_ = healthyAmpm
 	}
+
 	return nil
 }
 
