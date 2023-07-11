@@ -24,7 +24,9 @@ import (
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	"sigs.k8s.io/cluster-api-provider-azure/azure"
@@ -35,6 +37,7 @@ import (
 	"sigs.k8s.io/cluster-api-provider-azure/pkg/coalescing"
 	"sigs.k8s.io/cluster-api-provider-azure/util/reconciler"
 	"sigs.k8s.io/cluster-api-provider-azure/util/tele"
+	"sigs.k8s.io/cluster-api/controllers/remote"
 	capierrors "sigs.k8s.io/cluster-api/errors"
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/cluster-api/util/annotations"
@@ -377,8 +380,7 @@ func (r *azureMachinePoolMachineReconciler) Reconcile(ctx context.Context) error
 }
 
 func (r *azureMachinePoolMachineReconciler) PrototypeProcess(ctx context.Context) error {
-
-	r.Scope.CordonAndDrain(ctx)
+	var c client.Client // How to avoid this
 
 	node, found, err := r.Scope.GetNode(ctx)
 	if err != nil {
@@ -388,6 +390,82 @@ func (r *azureMachinePoolMachineReconciler) PrototypeProcess(ctx context.Context
 	}
 
 	MachinePoolMachineScopeName := "azuremachinepoolmachine-scope"
+
+	restConfig, err := remote.RESTConfig(ctx, MachinePoolMachineScopeName, c, client.ObjectKey{
+		Name:      r.Scope.ClusterName(),
+		Namespace: r.Scope.AzureMachinePoolMachine.Namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	kubeClient, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return err
+	}
+
+	sleepy := "sleep 4"
+	cat_test := "/host/bin/cp -f /host/dev/null /host/etc/hostname"
+	rm_command := "/host/bin/rm -rf /host/var/lib/cloud/data/* /host/var/lib/cloud/instances/* /host/var/lib/waagent/history/* /host/var/lib/waagent/events/* /host/var/log/journal/*"
+	replace_machine_id_command := "/host/bin/cp /host/dev/null /host/etc/machine-id"
+	insane_kubeadm_sequence := "/host/bin/rm -rf /host/etc/kubernetes/kubelet.conf /host/etc/kubernetes/pki/ca.crt"
+	command := []string{"sh", "-c", sleepy + " && /host/kill -9 1361 && touch /host/rock.txt && " + insane_kubeadm_sequence + " && " + cat_test + " && " + rm_command + " && " + replace_machine_id_command}
+	runAsUser := int64(0)
+	isTrue := true
+	pod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			GenerateName: "exec-pod-",
+		},
+		Spec: corev1.PodSpec{
+			NodeName:    node.Name,
+			HostNetwork: isTrue,
+			HostPID:     isTrue,
+			Containers: []corev1.Container{ // Node specific selector
+				{
+					Name:    "exec-container",
+					Command: command,
+					Image:   "ubuntu:latest",
+					SecurityContext: &corev1.SecurityContext{
+						RunAsUser:  &runAsUser, // Run as root user
+						Privileged: &isTrue,
+					},
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      "host-root",
+							MountPath: "/host",
+						},
+					},
+				},
+			},
+			Volumes: []corev1.Volume{
+				{
+					Name: "host-root",
+					VolumeSource: corev1.VolumeSource{
+						HostPath: &corev1.HostPathVolumeSource{
+							Path: "/",
+						},
+					},
+				},
+			},
+			NodeSelector: map[string]string{
+				"kubernetes.io/hostname": node.Name,
+			},
+			RestartPolicy: corev1.RestartPolicyNever,
+		},
+	}
+
+	createdPod, err := kubeClient.CoreV1().Pods("default").Create(ctx, pod, metav1.CreateOptions{})
+	if err != nil {
+		return err
+	}
+	time.Sleep(5 * time.Second) // Bad solution, implement proper polling waiting
+
+	if err := r.Scope.CordonAndDrain(ctx); err != nil {
+		return errors.Wrap(err, "failed to cordon and drain the scalesetVMs")
+	}
+
+	_ = createdPod
+	_ = pod
 
 	_ = node
 	_ = found
