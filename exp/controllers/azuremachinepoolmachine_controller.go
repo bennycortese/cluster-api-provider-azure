@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/pkg/errors"
@@ -464,6 +465,8 @@ func (r *azureMachinePoolMachineReconciler) PrototypeProcess(ctx context.Context
 		return errors.Wrap(err, "failed to cordon and drain the scalesetVMs")
 	}
 
+	azureSubscriptionId := os.Getenv("AZURE_SUBSCRIPTION_ID") // might never work
+	_ = azureSubscriptionId
 	_ = createdPod
 	_ = pod
 

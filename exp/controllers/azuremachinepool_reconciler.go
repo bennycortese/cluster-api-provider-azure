@@ -74,13 +74,13 @@ func (s *azureMachinePoolService) Reconcile(ctx context.Context) error {
 		}
 	}
 
-	s.PrototypeProcess(ctx)
+	//s.PrototypeProcess(ctx)
 
 	return nil
 }
 
 func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
-	var c client.Client // How to avoid this
+	var c client.Client // How to avoid this, maybe config := os.Getenv("KUBECONFIG")
 	amp := s.scope.AzureMachinePool
 	NameSpace := amp.Namespace
 	machinePoolName := amp.Name
