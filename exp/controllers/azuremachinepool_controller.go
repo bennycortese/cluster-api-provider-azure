@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/pkg/errors"
@@ -164,14 +165,14 @@ func (ampr *AzureMachinePoolReconciler) SetupWithManager(ctx context.Context, mg
 // +kubebuilder:rbac:groups="",resources=secrets;,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=nodes,verbs=get;list;watch
 
-
-/*func (amp *AzureMachinePool) PrototypeProcess() {
+/*
+func (amp *AzureMachinePool) PrototypeProcess() {
 	//NameSpace := amp.Namespace
 	//machinePoolName := amp.Name
 
 	//timestampDiff := "24h"
 	//_ = timeStampDiff
-	if(timestampDiff == "24h") {
+	if timestampDiff == "24h" {
 		replicaCount := amp.Status.Replicas
 
 		healthyAmpm := &infrav1exp.AzureMachinePoolMachine{
@@ -194,7 +195,7 @@ func (ampr *AzureMachinePoolReconciler) SetupWithManager(ctx context.Context, mg
 			err = c.Get(ctx, client.ObjectKeyFromObject(healthyAmpm), healthyAmpm)
 			if err != nil {
 				panic(err)
-			}	
+			}
 		}
 	}
 
@@ -212,7 +213,8 @@ func (ampr *AzureMachinePoolReconciler) Reconcile(ctx context.Context, req ctrl.
 	defer done()
 	ctx, cancel := context.WithTimeout(ctx, reconciler.DefaultedLoopTimeout(ampr.ReconcileTimeout))
 	defer cancel()
-
+	curInstanceID := strconv.Itoa(0)
+	_ = curInstanceID
 	logger = logger.WithValues("namespace", req.Namespace, "azureMachinePool", req.Name)
 
 	azMachinePool := &infrav1exp.AzureMachinePool{}

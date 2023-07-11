@@ -239,7 +239,7 @@ type (
 	AzureMachinePoolStatus struct {
 		// Ready is true when the provider resource is ready.
 		// +optional
-		Ready bool `json:"ready"`
+		Ready bool `json:"ready,omitempty"`
 
 		// Replicas is the most recently observed number of replicas.
 		// +optional
