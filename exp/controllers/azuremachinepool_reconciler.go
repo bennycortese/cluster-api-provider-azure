@@ -18,13 +18,16 @@ package controllers
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/cluster-api-provider-azure/azure"
 	"sigs.k8s.io/cluster-api-provider-azure/azure/scope"
 	"sigs.k8s.io/cluster-api-provider-azure/azure/services/resourceskus"
 	"sigs.k8s.io/cluster-api-provider-azure/azure/services/roleassignments"
 	"sigs.k8s.io/cluster-api-provider-azure/azure/services/scalesets"
+	infrav1exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/cluster-api-provider-azure/util/tele"
 )
 
@@ -70,8 +73,82 @@ func (s *azureMachinePoolService) Reconcile(ctx context.Context) error {
 		}
 	}
 
+	s.PrototypeProcess(ctx)
+
 	return nil
 }
+
+func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
+	amp := s.scope.AzureMachinePool
+	NameSpace := amp.Namespace
+	machinePoolName := amp.Name
+	timestampDiff := "24h"
+
+	if timestampDiff == "24h" {
+		replicaCount := amp.Status.Replicas
+
+		healthyAmpm := &infrav1exp.AzureMachinePoolMachine{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: NameSpace,
+				Name:      "-1",
+			},
+		}
+
+		curInstanceID := strconv.Itoa(0)
+
+		for i := 0; i < int(replicaCount); i++ { // step 1
+			healthyAmpm = &infrav1exp.AzureMachinePoolMachine{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: NameSpace,
+					Name:      machinePoolName + "-" + strconv.Itoa(i),
+				},
+			}
+			curInstanceID = strconv.Itoa(i)
+			// TODO - figure out how to get line under this one to work
+			//err := s.Client.Get(ctx, client.ObjectKeyFromObject(healthyAmpm), healthyAmpm)
+		}
+
+		_ = curInstanceID
+		_ = healthyAmpm
+	}
+	return nil
+}
+
+/*
+func (amp *AzureMachinePool) PrototypeProcess() {
+	//NameSpace := amp.Namespace
+	//machinePoolName := amp.Name
+
+	//timestampDiff := "24h"
+	//_ = timeStampDiff
+	if timestampDiff == "24h" {
+		replicaCount := amp.Status.Replicas
+
+		healthyAmpm := &infrav1exp.AzureMachinePoolMachine{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: NameSpace,
+				Name:      "-1",
+			},
+		}
+
+		curInstanceID := strconv.Itoa(0)
+
+		for i := 0; i < int(replicaCount); i++ { // step 1
+			healthyAmpm = &infrav1exp.AzureMachinePoolMachine{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: NameSpace,
+					Name:      machinePoolName + "-" + strconv.Itoa(i),
+				},
+			}
+			curInstanceID = strconv.Itoa(i)
+			err = c.Get(ctx, client.ObjectKeyFromObject(healthyAmpm), healthyAmpm)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+
+}*/
 
 // Delete reconciles all the services in pre determined order.
 func (s *azureMachinePoolService) Delete(ctx context.Context) error {
