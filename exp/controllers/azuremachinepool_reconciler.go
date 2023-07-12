@@ -99,7 +99,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 	_ = reconcilo
 	timestampDiff := "24h"
 
-	if timestampDiff == "23h" {
+	if timestampDiff == "24h" {
 		replicaCount := amp.Status.Replicas
 
 		healthyAmpm := &infrav1exp.AzureMachinePoolMachine{
@@ -184,13 +184,47 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 			return error
 		}
 
-		galleryImageVersionFactory, err := armcompute.NewGalleryImageVersionsClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
-		if err != nil {
-			log.Fatalf("failed to create galleryImageVersionFactory: %v", err)
-		}
-
 		galleryLocation := os.Getenv("AZURE_LOCATION")
 		galleryName := "GalleryInstantiation1"
+
+		gallery := armcompute.Gallery{
+			Location: &galleryLocation,
+		}
+
+		galleryFactory, err := armcompute.NewGalleriesClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
+		if err != nil {
+			return err
+		}
+
+		galleryFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, gallery, nil)
+
+		galleryImageFactory, err := armcompute.NewGalleryImagesClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
+		if err != nil {
+			return err
+		}
+
+		_, error = galleryImageFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", armcompute.GalleryImage{
+			Location: to.Ptr(os.Getenv("AZURE_LOCATION")),
+			Properties: &armcompute.GalleryImageProperties{
+				HyperVGeneration: to.Ptr(armcompute.HyperVGenerationV1),
+				Identifier: &armcompute.GalleryImageIdentifier{
+					Offer:     to.Ptr("myOfferName"),
+					Publisher: to.Ptr("myPublisherName"),
+					SKU:       to.Ptr("mySkuName"),
+				},
+				OSState: to.Ptr(armcompute.OperatingSystemStateTypesGeneralized),
+				OSType:  to.Ptr(armcompute.OperatingSystemTypesLinux),
+			},
+		}, nil)
+
+		if error != nil {
+			return err
+		}
+
+		galleryImageVersionFactory, err := armcompute.NewGalleryImageVersionsClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
+		if err != nil {
+			return err
+		}
 
 		poller, err := galleryImageVersionFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", "1.0.0", armcompute.GalleryImageVersion{
 			Location: to.Ptr(galleryLocation),
@@ -209,7 +243,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		}, nil) // step 5
 
 		if err != nil {
-			log.Fatalf("failed to finish the request: %v", err)
+			return err
 		}
 
 		_ = poller
