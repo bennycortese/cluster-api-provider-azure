@@ -18,9 +18,16 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"os"
 	"strconv"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/cluster-api-provider-azure/azure"
@@ -121,56 +128,63 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 
 		_ = curInstanceID
 		_ = healthyAmpm
-	}
 
-	subscriptionID := os.Getenv("AZURE_SUBSCRIPTION_ID")
-	_ = subscriptionID
-	//vmssName := machinePoolName
-	//_ = nodeName
+		subscriptionID := os.Getenv("AZURE_SUBSCRIPTION_ID")
+		resourceGroup := os.Getenv("AZURE_RESOURCE_GROUP") // TODO fix these
+		_ = subscriptionID
+		_ = resourceGroup
+		vmssName := machinePoolName
+		_ = vmssName
 
-	/*fmt.Println(os.Getenv("AZURE_CLIENT_ID"))
-	credConfig := auth.NewClientCredentialsConfig(os.Getenv("AZURE_CLIENT_ID"), os.Getenv("AZURE_CLIENT_SECRET"), os.Getenv("AZURE_TENANT_ID"))
-	authorizer, err := credConfig.Authorizer()
-	if err != nil {
-		panic(err)
-	}
+		cred, err := azidentity.NewDefaultAzureCredential(nil)
+		if err != nil {
+			return err
+		}
 
-	vmssClient := compute.NewVirtualMachineScaleSetsClient(subscriptionID)
-	vmssClient.Authorizer = authorizer
+		fmt.Println(os.Getenv("AZURE_CLIENT_ID")) // FIX all os.Getenv references
+		credConfig := auth.NewClientCredentialsConfig(os.Getenv("AZURE_CLIENT_ID"), os.Getenv("AZURE_CLIENT_SECRET"), os.Getenv("AZURE_TENANT_ID"))
+		authorizer, err := credConfig.Authorizer()
+		if err != nil {
+			panic(err)
+		}
 
-	vmssVMsClient := compute.NewVirtualMachineScaleSetVMsClient(subscriptionID)
-	vmssVMsClient.Authorizer = authorizer
+		vmssClient := compute.NewVirtualMachineScaleSetsClient(subscriptionID)
+		vmssClient.Authorizer = authorizer
 
-	vm, err := vmssVMsClient.Get(ctx, resourceGroup, vmssName, curInstanceID, "")
-	if err != nil {
-		log.Fatalf("Failed to find VM")
-	}
-	osDisk := vm.StorageProfile.OsDisk.ManagedDisk.ID
-	fmt.Println("OS DISK: ", *osDisk)
+		vmssVMsClient := compute.NewVirtualMachineScaleSetVMsClient(subscriptionID)
+		vmssVMsClient.Authorizer = authorizer
 
-	if *osDisk == "nil" {
-		panic("Disk not found")
-	}
+		vm, err := vmssVMsClient.Get(ctx, resourceGroup, vmssName, curInstanceID, "")
+		if err != nil {
+			log.Fatalf("Failed to find VM")
+		}
+		osDisk := vm.StorageProfile.OsDisk.ManagedDisk.ID
+		fmt.Println("OS DISK: ", *osDisk)
 
-	snapshotFactory, err := armcompute.NewSnapshotsClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
-	if err != nil {
-		log.Fatalf("failed to create snapshotFactory: %v", err)
-	}
+		if *osDisk == "nil" {
+			panic("Disk not found")
+		}
 
-	_, error := snapshotFactory.BeginCreateOrUpdate(ctx, resourceGroupName, "example-snapshot", armcompute.Snapshot{ // step 3
-		Location: to.Ptr("East US"),
-		Properties: &armcompute.SnapshotProperties{
-			CreationData: &armcompute.CreationData{
-				CreateOption: to.Ptr(armcompute.DiskCreateOptionCopy),
-				SourceURI:    osDisk,
+		snapshotFactory, err := armcompute.NewSnapshotsClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
+		if err != nil {
+			log.Fatalf("failed to create snapshotFactory: %v", err)
+		}
+
+		_, error := snapshotFactory.BeginCreateOrUpdate(ctx, resourceGroup, "example-snapshot", armcompute.Snapshot{ // step 3
+			Location: to.Ptr("East US"),
+			Properties: &armcompute.SnapshotProperties{
+				CreationData: &armcompute.CreationData{
+					CreateOption: to.Ptr(armcompute.DiskCreateOptionCopy),
+					SourceURI:    osDisk,
+				},
 			},
-		},
-	}, nil)
+		}, nil)
 
-	if error != nil {
-		log.Fatalf("failed to create snapshot: %v", error)
+		if error != nil {
+			log.Fatalf("failed to create snapshot: %v", error)
+		}
 	}
-	*/
+
 	return nil
 }
 
