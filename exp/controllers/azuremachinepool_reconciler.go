@@ -26,7 +26,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -181,8 +181,39 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		}, nil)
 
 		if error != nil {
-			log.Fatalf("failed to create snapshot: %v", error)
+			return error
 		}
+
+		galleryImageVersionFactory, err := armcompute.NewGalleryImageVersionsClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
+		if err != nil {
+			log.Fatalf("failed to create galleryImageVersionFactory: %v", err)
+		}
+
+		galleryLocation := os.Getenv("AZURE_LOCATION")
+		galleryName := "GalleryInstantiation1"
+
+		poller, err := galleryImageVersionFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", "1.0.0", armcompute.GalleryImageVersion{
+			Location: to.Ptr(galleryLocation),
+			Properties: &armcompute.GalleryImageVersionProperties{
+				SafetyProfile: &armcompute.GalleryImageVersionSafetyProfile{
+					AllowDeletionOfReplicatedLocations: to.Ptr(false),
+				},
+				StorageProfile: &armcompute.GalleryImageVersionStorageProfile{
+					OSDiskImage: &armcompute.GalleryOSDiskImage{
+						Source: &armcompute.GalleryDiskImageSource{
+							ID: to.Ptr("subscriptions/" + os.Getenv("AZURE_SUBSCRIPTION_ID") + "/resourceGroups/" + resourceGroup + "/providers/Microsoft.Compute/snapshots/example-snapshot"),
+						},
+					},
+				},
+			},
+		}, nil) // step 5
+
+		if err != nil {
+			log.Fatalf("failed to finish the request: %v", err)
+		}
+
+		_ = poller
+
 	}
 
 	return nil
