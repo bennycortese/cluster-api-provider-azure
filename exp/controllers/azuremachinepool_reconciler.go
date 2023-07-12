@@ -20,13 +20,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -129,23 +128,23 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		_ = curInstanceID
 		_ = healthyAmpm
 
-		subscriptionID := os.Getenv("AZURE_SUBSCRIPTION_ID")
-		resourceGroup := os.Getenv("AZURE_RESOURCE_GROUP") // TODO fix these
-		_ = subscriptionID
-		_ = resourceGroup
+		subscriptionID := "addeefcb-5be9-41a9-91d6-3307915e1428"
+		resourceGroup := "machinepool-4911" // TODO fix these
+		clientID := "2e975496-406f-4362-8705-016952b6a827"
+		clientSecret := "iF-8Q~zb2veuS9FRRDvzqju7yBQ1UKqovv4V-dki"
+		tenantID := "72f988bf-86f1-41af-91ab-2d7cd011db47"
 		vmssName := machinePoolName
-		_ = vmssName
 
 		cred, err := azidentity.NewDefaultAzureCredential(nil)
 		if err != nil {
 			return err
 		}
 
-		fmt.Println(os.Getenv("AZURE_CLIENT_ID")) // FIX all os.Getenv references
-		credConfig := auth.NewClientCredentialsConfig(os.Getenv("AZURE_CLIENT_ID"), os.Getenv("AZURE_CLIENT_SECRET"), os.Getenv("AZURE_TENANT_ID"))
+		fmt.Println(clientID) // FIX all os.Getenv references
+		credConfig := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
 		authorizer, err := credConfig.Authorizer()
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		vmssClient := compute.NewVirtualMachineScaleSetsClient(subscriptionID)
@@ -165,7 +164,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 			panic("Disk not found")
 		}
 
-		snapshotFactory, err := armcompute.NewSnapshotsClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
+		snapshotFactory, err := armcompute.NewSnapshotsClient(subscriptionID, cred, nil)
 		if err != nil {
 			log.Fatalf("failed to create snapshotFactory: %v", err)
 		}
@@ -183,71 +182,71 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		if error != nil {
 			return error
 		}
+		/*
+			galleryLocation := os.Getenv("AZURE_LOCATION")
+			galleryName := "GalleryInstantiation1"
 
-		galleryLocation := os.Getenv("AZURE_LOCATION")
-		galleryName := "GalleryInstantiation1"
+			gallery := armcompute.Gallery{
+				Location: &galleryLocation,
+			}
 
-		gallery := armcompute.Gallery{
-			Location: &galleryLocation,
-		}
+			galleryFactory, err := armcompute.NewGalleriesClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
+			if err != nil {
+				return err
+			}
 
-		galleryFactory, err := armcompute.NewGalleriesClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
-		if err != nil {
-			return err
-		}
+			galleryFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, gallery, nil)
 
-		galleryFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, gallery, nil)
+			galleryImageFactory, err := armcompute.NewGalleryImagesClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
+			if err != nil {
+				return err
+			}
 
-		galleryImageFactory, err := armcompute.NewGalleryImagesClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
-		if err != nil {
-			return err
-		}
-
-		_, error = galleryImageFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", armcompute.GalleryImage{
-			Location: to.Ptr(os.Getenv("AZURE_LOCATION")),
-			Properties: &armcompute.GalleryImageProperties{
-				HyperVGeneration: to.Ptr(armcompute.HyperVGenerationV1),
-				Identifier: &armcompute.GalleryImageIdentifier{
-					Offer:     to.Ptr("myOfferName"),
-					Publisher: to.Ptr("myPublisherName"),
-					SKU:       to.Ptr("mySkuName"),
+			_, error = galleryImageFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", armcompute.GalleryImage{
+				Location: to.Ptr(os.Getenv("AZURE_LOCATION")),
+				Properties: &armcompute.GalleryImageProperties{
+					HyperVGeneration: to.Ptr(armcompute.HyperVGenerationV1),
+					Identifier: &armcompute.GalleryImageIdentifier{
+						Offer:     to.Ptr("myOfferName"),
+						Publisher: to.Ptr("myPublisherName"),
+						SKU:       to.Ptr("mySkuName"),
+					},
+					OSState: to.Ptr(armcompute.OperatingSystemStateTypesGeneralized),
+					OSType:  to.Ptr(armcompute.OperatingSystemTypesLinux),
 				},
-				OSState: to.Ptr(armcompute.OperatingSystemStateTypesGeneralized),
-				OSType:  to.Ptr(armcompute.OperatingSystemTypesLinux),
-			},
-		}, nil)
+			}, nil)
 
-		if error != nil {
-			return err
-		}
+			if error != nil {
+				return err
+			}
 
-		galleryImageVersionFactory, err := armcompute.NewGalleryImageVersionsClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
-		if err != nil {
-			return err
-		}
+			galleryImageVersionFactory, err := armcompute.NewGalleryImageVersionsClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
+			if err != nil {
+				return err
+			}
 
-		poller, err := galleryImageVersionFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", "1.0.0", armcompute.GalleryImageVersion{
-			Location: to.Ptr(galleryLocation),
-			Properties: &armcompute.GalleryImageVersionProperties{
-				SafetyProfile: &armcompute.GalleryImageVersionSafetyProfile{
-					AllowDeletionOfReplicatedLocations: to.Ptr(false),
-				},
-				StorageProfile: &armcompute.GalleryImageVersionStorageProfile{
-					OSDiskImage: &armcompute.GalleryOSDiskImage{
-						Source: &armcompute.GalleryDiskImageSource{
-							ID: to.Ptr("subscriptions/" + os.Getenv("AZURE_SUBSCRIPTION_ID") + "/resourceGroups/" + resourceGroup + "/providers/Microsoft.Compute/snapshots/example-snapshot"),
+			poller, err := galleryImageVersionFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", "1.0.0", armcompute.GalleryImageVersion{
+				Location: to.Ptr(galleryLocation),
+				Properties: &armcompute.GalleryImageVersionProperties{
+					SafetyProfile: &armcompute.GalleryImageVersionSafetyProfile{
+						AllowDeletionOfReplicatedLocations: to.Ptr(false),
+					},
+					StorageProfile: &armcompute.GalleryImageVersionStorageProfile{
+						OSDiskImage: &armcompute.GalleryOSDiskImage{
+							Source: &armcompute.GalleryDiskImageSource{
+								ID: to.Ptr("subscriptions/" + os.Getenv("AZURE_SUBSCRIPTION_ID") + "/resourceGroups/" + resourceGroup + "/providers/Microsoft.Compute/snapshots/example-snapshot"),
+							},
 						},
 					},
 				},
-			},
-		}, nil) // step 5
+			}, nil) // step 5
 
-		if err != nil {
-			return err
-		}
+			if err != nil {
+				return err
+			}
 
-		_ = poller
-
+			_ = poller
+		*/
 	}
 
 	return nil
