@@ -25,7 +25,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -81,7 +81,7 @@ func (s *azureMachinePoolService) Reconcile(ctx context.Context) error {
 		}
 	}
 
-	//s.PrototypeProcess(ctx)
+	s.PrototypeProcess(ctx)
 
 	return nil
 }
@@ -128,11 +128,26 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		_ = curInstanceID
 		_ = healthyAmpm
 
-		subscriptionID := "addeefcb-5be9-41a9-91d6-3307915e1428"
-		resourceGroup := "machinepool-4911" // TODO fix these
-		clientID := "2e975496-406f-4362-8705-016952b6a827"
-		clientSecret := "iF-8Q~zb2veuS9FRRDvzqju7yBQ1UKqovv4V-dki"
-		tenantID := "72f988bf-86f1-41af-91ab-2d7cd011db47"
+		//scope.AzureMachinePoolMachine = healthyAmpm
+		//scope.CordonAndDrain()
+
+		//ResourceGroup() string
+		//ClusterName() string
+		//Location() string
+		//ExtendedLocation() *infrav1.ExtendedLocationSpec
+		//ExtendedLocationName() string
+		//ExtendedLocationType() string
+		//AdditionalTags() infrav1.Tags
+		//AvailabilitySetEnabled() bool
+		//CloudProviderConfigOverrides() *infrav1.CloudProviderConfigOverrides
+		//FailureDomains() []string
+
+		subscriptionID := s.scope.ClusterScoper.SubscriptionID()
+		resourceGroup := s.scope.ClusterScoper.ResourceGroup()
+		clientID := s.scope.ClusterScoper.ClientID()
+		clientSecret := s.scope.ClusterScoper.ClientSecret()
+		tenantID := s.scope.ClusterScoper.TenantID()
+		galleryLocation := s.scope.ClusterScoper.Location()
 		vmssName := machinePoolName
 
 		cred, err := azidentity.NewDefaultAzureCredential(nil)
@@ -182,71 +197,69 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		if error != nil {
 			return error
 		}
-		/*
-			galleryLocation := os.Getenv("AZURE_LOCATION")
-			galleryName := "GalleryInstantiation1"
 
-			gallery := armcompute.Gallery{
-				Location: &galleryLocation,
-			}
+		galleryName := "GalleryInstantiation1"
 
-			galleryFactory, err := armcompute.NewGalleriesClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
-			if err != nil {
-				return err
-			}
+		gallery := armcompute.Gallery{
+			Location: &galleryLocation,
+		}
 
-			galleryFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, gallery, nil)
+		galleryFactory, err := armcompute.NewGalleriesClient(subscriptionID, cred, nil)
+		if err != nil {
+			return err
+		}
 
-			galleryImageFactory, err := armcompute.NewGalleryImagesClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
-			if err != nil {
-				return err
-			}
+		galleryFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, gallery, nil)
 
-			_, error = galleryImageFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", armcompute.GalleryImage{
-				Location: to.Ptr(os.Getenv("AZURE_LOCATION")),
-				Properties: &armcompute.GalleryImageProperties{
-					HyperVGeneration: to.Ptr(armcompute.HyperVGenerationV1),
-					Identifier: &armcompute.GalleryImageIdentifier{
-						Offer:     to.Ptr("myOfferName"),
-						Publisher: to.Ptr("myPublisherName"),
-						SKU:       to.Ptr("mySkuName"),
-					},
-					OSState: to.Ptr(armcompute.OperatingSystemStateTypesGeneralized),
-					OSType:  to.Ptr(armcompute.OperatingSystemTypesLinux),
+		galleryImageFactory, err := armcompute.NewGalleryImagesClient(subscriptionID, cred, nil)
+		if err != nil {
+			return err
+		}
+
+		_, error = galleryImageFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", armcompute.GalleryImage{
+			Location: to.Ptr(galleryLocation),
+			Properties: &armcompute.GalleryImageProperties{
+				HyperVGeneration: to.Ptr(armcompute.HyperVGenerationV1),
+				Identifier: &armcompute.GalleryImageIdentifier{
+					Offer:     to.Ptr("myOfferName"),
+					Publisher: to.Ptr("myPublisherName"),
+					SKU:       to.Ptr("mySkuName"),
 				},
-			}, nil)
+				OSState: to.Ptr(armcompute.OperatingSystemStateTypesGeneralized),
+				OSType:  to.Ptr(armcompute.OperatingSystemTypesLinux),
+			},
+		}, nil)
 
-			if error != nil {
-				return err
-			}
+		if error != nil {
+			return err
+		}
 
-			galleryImageVersionFactory, err := armcompute.NewGalleryImageVersionsClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), cred, nil)
-			if err != nil {
-				return err
-			}
+		galleryImageVersionFactory, err := armcompute.NewGalleryImageVersionsClient(subscriptionID, cred, nil)
+		if err != nil {
+			return err
+		}
 
-			poller, err := galleryImageVersionFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", "1.0.0", armcompute.GalleryImageVersion{
-				Location: to.Ptr(galleryLocation),
-				Properties: &armcompute.GalleryImageVersionProperties{
-					SafetyProfile: &armcompute.GalleryImageVersionSafetyProfile{
-						AllowDeletionOfReplicatedLocations: to.Ptr(false),
-					},
-					StorageProfile: &armcompute.GalleryImageVersionStorageProfile{
-						OSDiskImage: &armcompute.GalleryOSDiskImage{
-							Source: &armcompute.GalleryDiskImageSource{
-								ID: to.Ptr("subscriptions/" + os.Getenv("AZURE_SUBSCRIPTION_ID") + "/resourceGroups/" + resourceGroup + "/providers/Microsoft.Compute/snapshots/example-snapshot"),
-							},
+		poller, err := galleryImageVersionFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", "1.0.0", armcompute.GalleryImageVersion{
+			Location: to.Ptr(galleryLocation),
+			Properties: &armcompute.GalleryImageVersionProperties{
+				SafetyProfile: &armcompute.GalleryImageVersionSafetyProfile{
+					AllowDeletionOfReplicatedLocations: to.Ptr(false),
+				},
+				StorageProfile: &armcompute.GalleryImageVersionStorageProfile{
+					OSDiskImage: &armcompute.GalleryOSDiskImage{
+						Source: &armcompute.GalleryDiskImageSource{
+							ID: to.Ptr("subscriptions/" + subscriptionID + "/resourceGroups/" + resourceGroup + "/providers/Microsoft.Compute/snapshots/example-snapshot"),
 						},
 					},
 				},
-			}, nil) // step 5
+			},
+		}, nil) // step 5
 
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
+		}
 
-			_ = poller
-		*/
+		_ = poller
 	}
 
 	return nil
