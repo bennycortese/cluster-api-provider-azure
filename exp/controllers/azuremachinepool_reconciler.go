@@ -155,6 +155,9 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 			return err
 		}
 
+		_ = galleryLocation
+		_ = cred
+
 		fmt.Println(clientID) // FIX all os.Getenv references
 		credConfig := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
 		authorizer, err := credConfig.Authorizer()
@@ -195,24 +198,36 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		}, nil)
 
 		if error != nil {
-			return error
+			_ = error
 		}
 
-		galleryName := "GalleryInstantiation1"
+		galleryName := "GalleryInstantiation3"
 
 		gallery := armcompute.Gallery{
-			Location: &galleryLocation,
+			Location: to.Ptr(galleryLocation),
+			Properties: &armcompute.GalleryProperties{
+				Description: to.Ptr("This is the gallery description."),
+			},
 		}
 
 		galleryFactory, err := armcompute.NewGalleriesClient(subscriptionID, cred, nil)
 		if err != nil {
+			log.Fatalf("REEP " + err.Error())
+			return err
+		}
+		_ = galleryName
+		_ = gallery
+		_ = galleryFactory
+		_, err = galleryFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, gallery, nil)
+
+		if err != nil {
+			log.Fatalf("REE " + err.Error())
 			return err
 		}
 
-		galleryFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, gallery, nil)
-
 		galleryImageFactory, err := armcompute.NewGalleryImagesClient(subscriptionID, cred, nil)
 		if err != nil {
+			log.Fatalf("WA")
 			return err
 		}
 
@@ -231,6 +246,8 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		}, nil)
 
 		if error != nil {
+			log.Fatalf("ROAR " + error.Error())
+			//errors.Wrapf(error, "failed to make new image gallery")
 			return err
 		}
 
