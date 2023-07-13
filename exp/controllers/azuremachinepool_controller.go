@@ -274,13 +274,27 @@ func (ampr *AzureMachinePoolReconciler) Reconcile(ctx context.Context, req ctrl.
 		return reconcile.Result{}, err
 	}
 
-	// Create the machine pool scope
-	machinePoolScope, err := scope.NewMachinePoolScope(scope.MachinePoolScopeParams{
+	machinePoolMachineScope, err := scope.NewMachinePoolMachineScope(scope.MachinePoolMachineScopeParams{
 		Client:           ampr.Client,
 		MachinePool:      machinePool,
 		AzureMachinePool: azMachinePool,
 		ClusterScope:     clusterScope,
+		//AzureMachinePoolMachine
 	})
+
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to create scope")
+	}
+
+	// Create the machine pool scope
+	machinePoolScope, err := scope.NewMachinePoolScope(scope.MachinePoolScopeParams{
+		Client:                  ampr.Client,
+		MachinePool:             machinePool,
+		AzureMachinePool:        azMachinePool,
+		ClusterScope:            clusterScope,
+		MachinePoolMachineScope: *machinePoolMachineScope,
+	})
+
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to create scope")
 	}

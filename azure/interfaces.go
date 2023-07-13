@@ -50,6 +50,10 @@ type Authorizer interface {
 	HashKey() string
 }
 
+type MachinePoolMachineFunctionality interface {
+	CordonAndDrain(ctx context.Context) error
+}
+
 // NetworkDescriber is an interface which can get common Azure Cluster Networking information.
 type NetworkDescriber interface {
 	Vnet() *infrav1.VnetSpec

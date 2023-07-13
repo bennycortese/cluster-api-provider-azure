@@ -475,6 +475,9 @@ func (r *azureMachinePoolMachineReconciler) PrototypeProcess(ctx context.Context
 	_ = err
 	_ = MachinePoolMachineScopeName
 
+	// Can undrain here but hopefully will be exporting all of this code out of here so I'm going to leave it out for now to avoid imports
+	// that will get moved later
+
 	return nil
 }
 

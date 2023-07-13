@@ -344,7 +344,7 @@ func (s *MachinePoolMachineScope) UpdateNodeStatus(ctx context.Context) error {
 			s.AzureMachinePoolMachine.Annotations = map[string]string{}
 		}
 		s.AzureMachinePoolMachine.Annotations["roar"] = "ok"
-		
+
 		curTime := time.Now().UTC()
 		layout := "2006-01-02T15:04:05Z"
 		timestamp := curTime.Format(layout)

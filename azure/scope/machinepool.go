@@ -57,15 +57,17 @@ const ScalesetsServiceName = "scalesets"
 type (
 	// MachinePoolScopeParams defines the input parameters used to create a new MachinePoolScope.
 	MachinePoolScopeParams struct {
-		Client           client.Client
-		MachinePool      *expv1.MachinePool
-		AzureMachinePool *infrav1exp.AzureMachinePool
-		ClusterScope     azure.ClusterScoper
+		Client                  client.Client
+		MachinePool             *expv1.MachinePool
+		AzureMachinePool        *infrav1exp.AzureMachinePool
+		ClusterScope            azure.ClusterScoper
+		MachinePoolMachineScope MachinePoolMachineScope
 	}
 
 	// MachinePoolScope defines a scope defined around a machine pool and its cluster.
 	MachinePoolScope struct {
 		azure.ClusterScoper
+		azure.MachinePoolMachineFunctionality
 		AzureMachinePool           *infrav1exp.AzureMachinePool
 		MachinePool                *expv1.MachinePool
 		client                     client.Client
@@ -107,12 +109,13 @@ func NewMachinePoolScope(params MachinePoolScopeParams) (*MachinePoolScope, erro
 	}
 
 	return &MachinePoolScope{
-		client:                     params.Client,
-		MachinePool:                params.MachinePool,
-		AzureMachinePool:           params.AzureMachinePool,
-		patchHelper:                helper,
-		capiMachinePoolPatchHelper: capiMachinePoolPatchHelper,
-		ClusterScoper:              params.ClusterScope,
+		client:                          params.Client,
+		MachinePool:                     params.MachinePool,
+		AzureMachinePool:                params.AzureMachinePool,
+		patchHelper:                     helper,
+		capiMachinePoolPatchHelper:      capiMachinePoolPatchHelper,
+		ClusterScoper:                   params.ClusterScope,
+		MachinePoolMachineFunctionality: &params.MachinePoolMachineScope,
 	}, nil
 }
 
