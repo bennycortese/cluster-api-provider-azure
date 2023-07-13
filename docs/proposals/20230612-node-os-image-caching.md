@@ -254,7 +254,19 @@ This proposal requires CAPZ to have write permissions for azureMachinePools in o
 Example risks:
 1. A bad snapshot is taken, and we will mitigate this risk by having trying to prevent it before it happens by checking if things are ready and draining everything before taking the snapshot. Rolling back and determining if a bad snapshot is bad is out of scope for this proposal currently and will be for the operator to watch, so here we will simply try to prevent it as best as we can.
 1. A bad security patch or update might have been applied to a user’s node that they don’t want to be applied to future nodes. To mitigate this risk, we will make it easy for users to turn this feature off, and if they fix it on their original node the snapshot will be taken of that node instead.
+<<<<<<< HEAD
 1. Deleting previous snapshots might not allow for new image instantiations from those snapshots since Azure Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. Instead deletion can be done after making sure the new image is successful for new deployments.
+=======
+1. Deleting previous snapshots might break things since Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. A way to mitigate this is to implement the deletion with the optional field for rolling update and if the prototyping is non-rolling slowly make all the images of the previously instantiated azuremachinepoolmachines match the current image, and when the previous image isn't being used anymore delete that version and the snapshot associated with it.
+
+The following limits exist for Azure Compute Galleries:
+1. 100 galleries, per subscription, per region
+1. 1,000 image definitions, per subscription, per region
+1. 10,000 image versions, per subscription, per region
+1. 100 replicas per image version however 50 replicas should be sufficient for most use cases
+1. Any disk attached to the image must be less than or equal to 1 TB in size
+1. Resource move isn't supported for Azure compute gallery resources
+>>>>>>> ec39edc9 (Added discussion of slight risk and mitigation with lots of snapshots, shouldn't be too big of a problem if we keep it in mind)
 
 Link to page with Azure Compute Gallery limits: https://learn.microsoft.com/en-us/azure/virtual-machines/azure-compute-gallery
 
