@@ -83,7 +83,11 @@ We will know we’ve succeeded when we can benchmark speed increases and success
 1. Automatic bad snapshot rollbacks since it will be hard to generically determine when a snapshot is bad currently
 1. Annotating the timestamp on each node of when it was updated with automatic security updates
 1. Allow the feature to be enabled for any type of image (marketplace or custom with ID)
+<<<<<<< HEAD
 1. `AzureMachineTemplate` support, holding out for now because of immutability of the `AzureMachineTemplates`
+=======
+1. AzureMachineTemplate support, holding out for now because of immutability of the AzureMachineTemplates
+>>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 
 ## Proposal
 
@@ -103,9 +107,15 @@ As an operator I would like to be able to have my node’s OS image cache for th
 
 ### Implementation Details/Notes/Constraints
 
+<<<<<<< HEAD
 The plan is to modify the existing Controllers with the Node Prototype Pattern as desired. These controller additions can be added to `AzureMachinePool` Controller.
 
 An operator will be able to decide to turn the feature on or off with an environment variable on clusterctl initialization, and then on a cluster by cluster basis can alter the `AzureMachinePools` to specify the use of the feature. They can also update the `AzureMachinePool` to customize how long they want the caching interval to be (see the yaml files below in this section for the caching interval).
+=======
+The plan is to modify the existing Controllers with the Node Prototype Pattern as desired. These controller additions can be added to AzureMachinePool Controller.
+
+An operator will be able to decide to turn the feature on or off with an environment variable on clusterctl initialization, and then on a cluster by cluster basis can alter the AzureMachinePools to specify the use of the feature. They can also update the AzureMachinePool to customize how long they want the caching interval to be (see the yaml files below in this section for the caching interval).
+>>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 
 Example of the environment variable being turned on:
 
@@ -113,21 +123,32 @@ Example of the environment variable being turned on:
 export AZURE_NODE_OS_CACHING=true
 ```
 
+<<<<<<< HEAD
 The controller will maintain a timestamp in each `AzureMachinePool`, and when the current time is the chosen interval ahead or more, the controller will perform the caching. Since the current controller manager requeues all objects every ten minutes by default the objects will be requeued shortly after its due time to be recached. This is because typically we expect to cache every 24 hours and it is very unexpected that this won't be frequent enough considering normal patch rates. 
 
 Example of how the timestamp will be maintained in the `AzureMachinePool`:
+=======
+The controller will maintain a timestamp in each AzureMachinePool, and when the current time is the chosen interval ahead or more, the controller will perform the caching. Since the current controller manager requeues all objects every ten minutes by default the objects will be requeued shortly after its due time to be recached. This is because typically we expect to cache every 24 hours and it is very unexpected that this won't be frequent enough considering normal patch rates. 
+
+Example of how the timestamp will be maintained in the AzureMachinePool:
+>>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 
 ```yaml
 status:
   lastImagePrototype: "2023-06-12T23:14:55Z"
 ```
 
+<<<<<<< HEAD
 When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a Azure Compute Gallery image, delete the snapshot, and then configure the `AzureMachinePool` spec to use that Azure Compute Gallery image. After, it will store the current time as its timestamp. As a note, for the first implementation of this feature we will require the user to also use a Azure Compute Gallery image.
+=======
+When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a compute image gallery image, delete the snapshot, and then configure the AzureMachinePool specs to use that compute image gallery image. After, it will store the current time as its timestamp. As a note, for the first implementation of this feature we will require the user to also use a compute image gallery image.
+>>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 
 Diagram of the Node OS Caching Process:
 
 ![Figure 1](./images/node-os-image-cache.png)
 
+<<<<<<< HEAD
 As for why the healthy node has to be shut down while creating a snapshot of it, if it isn’t shut down first then pods can be scheduled as the snapshot is taken which will cause some dangerous states in terms of how it exists after being utilized by the `AzureMachinePools`.
 
 <<<<<<< HEAD
@@ -139,6 +160,11 @@ In terms of how a healthy node would be selected, there is already state data pr
 =======
 In terms of how a healthy node would be selected, there is already state data present on each AzureMachinePoolMachine and AzureMachine which we can use and is listed in the examples below. An ideal node would be one which is running and healthy. Whichever node has been running and healthy for the longest amount of time should be chosen as it’s the most overall stable. This means that for AzureMachinePoolMachines and AzureMachines we will take the node with the earliest creation time from metadata.creationTimestamp and has latestModelApplied : true present if it is an AzureMachinePoolMachine since this means that any user changes to the OS image have been rolled out already on this node. If it is an AzureMachine, since they tend to be updated together with automatic security updates and are immutable in regard to user changes to the OS image, we don't need to worry about a field like latestModelApplied. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication. In terms of knowing if the node os image has had updates that are not user made (so like automatic kernel patches), for the first development of this feature we won't know but all nodes should roughly be updated together so it will be fine in most cases.
 >>>>>>> 58d5327b (Spacing difference)
+=======
+As for why the healthy node has to be shut down while creating a snapshot of it, if it isn’t shut down first then pods can be scheduled as the snapshot is taken which will cause some dangerous states in terms of how it exists after being utilized by the AzureMachinePools.
+
+In terms of how a healthy node would be selected, there is already state data present on each AzureMachinePoolMachine which we can use and is listed in the examples below. An ideal node would be one which is running and healthy. Whichever node has been running and healthy for the longest amount of time should be chosen as it’s the most overall stable. This means that for AzureMachinePoolMachines we will take the node with the earliest creation time from metadata.creationTimestamp and has latestModelApplied : true present if it is an AzureMachinePoolMachine since this means that any user changes to the OS image have been rolled out already on this node. If it is an AzureMachine, since they tend to be updated together with automatic security updates and are immutable in regard to user changes to the OS image, we don't need to worry about a field like latestModelApplied. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication. In terms of knowing if the node os image has had updates that are not user made (so like automatic kernel patches), for the first development of this feature we won't know but all nodes should roughly be updated together so it will be fine in most cases.
+>>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 
 There is already state data present on each `AzureMachinePoolMachine` which we can use and is listed in the examples below. An ideal node would be one which is running and healthy. Whichever node has been running and healthy for the longest amount of time should be chosen as it’s the most overall stable. This means that for `AzureMachinePoolMachines` we will take the node with the earliest creation time from `metadata.creationTimestamp` and has `latestModelApplied : true` present if it is an `AzureMachinePoolMachine` since this means that any user changes to the OS image have been rolled out already on this node. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication. In terms of knowing if the node os image has had updates that are not user made (so like automatic kernel patches), for the first development of this feature we won't know but all nodes in a cluster are configured to regularly automatically apply security patches to system packages.
 
@@ -166,6 +192,7 @@ status:
   ready: true
 ```
 
+<<<<<<< HEAD
 #### When to take a Snapshot
 
 A day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters.
@@ -192,6 +219,11 @@ spec:
       nodePrototyping:
         interval: 24h
 ```
+=======
+In terms of when to take a snapshot, a day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters.
+
+In terms of data model changes, AzureMachinePool will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachinePool we will add a new optional field under spec.template.image called nodePrototyping which will be enabled if present and it have a required field under it called interval which will map to an interval of 1 day or 24 hours by default.
+>>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 
 For AzureMachinePool, we will also add an optional field under spec.strategy.rollingUpdate called prototypeAutomaticRollout which will be set to false by default since we don't want the replacement of a node OS image to automatically trigger a rolling update of all the nodes. This is because the new image will be functionally identical to the old one outside of name itself (since the old nodes will all have the update and security patch contents already present). If for some reason the operator wants to always trigger this rollout (maybe if they programmatically use the image names themselves), then they can simply set this field to true.
 
@@ -211,7 +243,11 @@ spec:
 
 ### Security Model
 
+<<<<<<< HEAD
 This proposal requires CAPZ to have write permissions for `AzureMachinePools` in order to properly update the nodes’ OS image on the spec. Go has a library called `time` and `time.ParseDuration` will be used to parse the time interval provided by an operator instead of using regular expressions. Denial of service attacks will be protected against by having an update system which doesn’t need to be atomic. If part of the caching is complete there is no risk in the update not finishing since the spec update will happen at once. No sensitive data is being stored in a secret.
+=======
+This proposal requires CAPZ to have write permissions for azureMachinePools in order to properly update the nodes’ OS image on the spec. Go has a library called time and time.ParseDuration will be used to parse the time interval provided by an operator instead of using regular expressions. Denial of service attacks will be protected against by having an update system which doesn’t need to be atomic. If part of the caching is complete there is no risk in the update not finishing since the spec update will happen at once. No sensitive data is being stored in a secret.
+>>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 
 ### Risks and Mitigations
 
@@ -224,7 +260,11 @@ Link to page with Azure Compute Gallery limits: https://learn.microsoft.com/en-u
 
 Link to page with snapshot pricing (Azure Compute Galleries themselves are free): https://azure.microsoft.com/en-us/pricing/details/managed-disks/
 
+<<<<<<< HEAD
 The UX will mostly be impactful towards operators and members of the CAPZ community will test these changes and give feedback on them. Security will also likely follow in terms of how it gets reviewed, but no major security problems should be possible from this change. For folks who work outside the SIG or subproject, they should hopefully have faster horizontal scaling without needing to directly do anything outside of setting an environment variable on clusterctl initialization and updating their `AzureMachinePools`.
+=======
+The UX will mostly be impactful towards operators and members of the CAPZ community will test these changes and give feedback on them. Security will also likely follow in terms of how it gets reviewed, but no major security problems should be possible from this change. For folks who work outside the SIG or subproject, they should hopefully have faster horizontal scaling without needing to directly do anything outside of setting an environment variable on clusterctl initialization and updating their AzureMachinePools.
+>>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 
 ## Alternatives
 
@@ -237,7 +277,11 @@ We can put it in the `AzureMachinePool` controller or make it another controller
 
 ## Upgrade Strategy
 
+<<<<<<< HEAD
 Turning off or on the feature for a particular operator is done with them setting an environment variable to enable or disable it with clusterctl initialization. They will also be able to alter their `AzureMachinePool` instances to add the feature or remove it and that is all that is required to keep previous behavior or make use of the enhancement. No backwards compatibility will be broken, all this feature request will do is change previous controllers and add optional fields to `AzureMachinePool` which can be utilized or not as desired.
+=======
+Turning off or on the feature for a particular operator is done with them setting an environment variable to enable or disable it with clusterctl initialization. They will also be able to alter their AzureMachinePool instances to add the feature or remove it and that is all that is required to keep previous behavior or make use of the enhancement. No backwards compatibility will be broken, all this feature request will do is change previous controllers and add optional fields to AzureMachinePool which can be utilized or not as desired.
+>>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 
 ## Additional Details
 
@@ -246,7 +290,11 @@ Turning off or on the feature for a particular operator is done with them settin
 There will be e2e tests, at least one of which will be as follows:
 Have an example node and an example patch, apply the patch to the preexisting node, and then trigger the controller to pretend the interval of time has passed, and then it should attempt to create another node and compare the OS image of the new node and the original node, finding that they are both the same image.
 
+<<<<<<< HEAD
 It should be tested primarily in isolation as other components shouldn’t affect what it tries to do, but it may need to be checked with other components to see what happens if certain race conditions or updates at the same time of `AzureMachinePool` are occurring (in which case a lower priority should likely be assigned to this controller for finishing its task after as ideally those changes are in effect before isolating the node).
+=======
+It should be tested primarily in isolation as other components shouldn’t affect what it tries to do, but it may need to be checked with other components to see what happens if certain race conditions or updates at the same time of AzureMachinePool are occurring (in which case a lower priority should likely be assigned to this controller for finishing its task after as ideally those changes are in effect before isolating the node).
+>>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 
 ### Graduation Criteria [optional]
 
@@ -258,7 +306,11 @@ Stable:
 
 The feature has been used for a while and is widely acceptable as well as reliable and will now be enabled by default.
 
+<<<<<<< HEAD
 At this point a more sophisticated method of choosing a healthy node will be used, preferably by annotating the `AzureMachinePoolMachine` instances after every patch. This will allow for more optimization and fewer unnecessary uses of this operation as if no updates in the interval are needed we would be able to now properly know.
+=======
+At this point a more sophisticated method of choosing a healthy node will be used, preferably by annotating the AzureMachinePoolMachine instances after every patch. This will allow for more optimization and fewer unnecessary uses of this operation as if no updates in the interval are needed we would be able to now properly know.
+>>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 
 ### Version Skew Strategy [optional]
 
