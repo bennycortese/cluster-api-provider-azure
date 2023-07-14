@@ -35,6 +35,7 @@ import (
 	"sigs.k8s.io/cluster-api-provider-azure/azure/services/roleassignments"
 	"sigs.k8s.io/cluster-api-provider-azure/azure/services/scalesets"
 	infrav1exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	"sigs.k8s.io/cluster-api-provider-azure/feature"
 	"sigs.k8s.io/cluster-api-provider-azure/util/tele"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -81,7 +82,9 @@ func (s *azureMachinePoolService) Reconcile(ctx context.Context) error {
 		}
 	}
 
-	s.PrototypeProcess(ctx)
+	if feature.Gates.Enabled(feature.NodePrototyping) {
+		s.PrototypeProcess(ctx)
+	}
 
 	return nil
 }
