@@ -89,6 +89,28 @@ func (s *azureMachinePoolService) Reconcile(ctx context.Context) error {
 	return nil
 }
 
+/*
+func () Snapshot(subscriptionID string, cred *DefaultAzureCredential,) error {
+	snapshotFactory, err := armcompute.NewSnapshotsClient(subscriptionID, cred, nil)
+	if err != nil {
+		log.Fatalf("failed to create snapshotFactory: %v", err)
+	}
+
+	_, err := snapshotFactory.BeginCreateOrUpdate(ctx, resourceGroup, "example-snapshot", armcompute.Snapshot{ // step 3
+		Location: to.Ptr("East US"),
+		Properties: &armcompute.SnapshotProperties{
+			CreationData: &armcompute.CreationData{
+				CreateOption: to.Ptr(armcompute.DiskCreateOptionCopy),
+				SourceURI:    osDisk,
+			},
+		},
+	}, nil)
+
+	if err != nil {
+		_ = err
+	}
+}*/
+
 func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 	//var c client.Client // How to avoid this, maybe config := os.Getenv("KUBECONFIG")
 
@@ -131,20 +153,6 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		_ = curInstanceID
 		_ = healthyAmpm
 
-		//scope.AzureMachinePoolMachine = healthyAmpm
-		//scope.CordonAndDrain()
-
-		//ResourceGroup() string
-		//ClusterName() string
-		//Location() string
-		//ExtendedLocation() *infrav1.ExtendedLocationSpec
-		//ExtendedLocationName() string
-		//ExtendedLocationType() string
-		//AdditionalTags() infrav1.Tags
-		//AvailabilitySetEnabled() bool
-		//CloudProviderConfigOverrides() *infrav1.CloudProviderConfigOverrides
-		//FailureDomains() []string
-
 		subscriptionID := s.scope.ClusterScoper.SubscriptionID()
 		resourceGroup := s.scope.ClusterScoper.ResourceGroup()
 		clientID := s.scope.ClusterScoper.ClientID()
@@ -152,6 +160,18 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		tenantID := s.scope.ClusterScoper.TenantID()
 		galleryLocation := s.scope.ClusterScoper.Location()
 		vmssName := machinePoolName
+
+		myscope, err := scope.NewMachinePoolMachineScope(scope.MachinePoolMachineScopeParams{
+			Client:                  c,
+			MachinePool:             s.scope.MachinePool,
+			AzureMachinePool:        amp,
+			AzureMachinePoolMachine: healthyAmpm,
+			ClusterScope:            s.scope.ClusterScoper,
+		})
+
+		_ = err
+
+		myscope.CordonAndDrain(ctx)
 
 		cred, err := azidentity.NewDefaultAzureCredential(nil)
 		if err != nil {
@@ -190,7 +210,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 			log.Fatalf("failed to create snapshotFactory: %v", err)
 		}
 
-		_, error := snapshotFactory.BeginCreateOrUpdate(ctx, resourceGroup, "example-snapshot", armcompute.Snapshot{ // step 3
+		_, err = snapshotFactory.BeginCreateOrUpdate(ctx, resourceGroup, "example-snapshot", armcompute.Snapshot{ // step 3
 			Location: to.Ptr("East US"),
 			Properties: &armcompute.SnapshotProperties{
 				CreationData: &armcompute.CreationData{
@@ -200,8 +220,8 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 			},
 		}, nil)
 
-		if error != nil {
-			_ = error
+		if err != nil {
+			_ = err
 		}
 
 		galleryName := "GalleryInstantiation3"
@@ -234,7 +254,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 			return err
 		}
 
-		_, error = galleryImageFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", armcompute.GalleryImage{
+		_, err = galleryImageFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", armcompute.GalleryImage{
 			Location: to.Ptr(galleryLocation),
 			Properties: &armcompute.GalleryImageProperties{
 				HyperVGeneration: to.Ptr(armcompute.HyperVGenerationV1),
@@ -248,8 +268,8 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 			},
 		}, nil)
 
-		if error != nil {
-			log.Fatalf("ROAR " + error.Error())
+		if err != nil {
+			log.Fatalf("ROAR " + err.Error())
 			//errors.Wrapf(error, "failed to make new image gallery")
 			return err
 		}
