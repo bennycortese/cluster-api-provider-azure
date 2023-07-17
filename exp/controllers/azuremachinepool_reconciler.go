@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -28,7 +29,11 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
+	kubedrain "k8s.io/kubectl/pkg/drain"
 	"sigs.k8s.io/cluster-api-provider-azure/azure"
 	"sigs.k8s.io/cluster-api-provider-azure/azure/scope"
 	"sigs.k8s.io/cluster-api-provider-azure/azure/services/resourceskus"
@@ -37,6 +42,7 @@ import (
 	infrav1exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/cluster-api-provider-azure/feature"
 	"sigs.k8s.io/cluster-api-provider-azure/util/tele"
+	"sigs.k8s.io/cluster-api/controllers/remote"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -87,6 +93,15 @@ func (s *azureMachinePoolService) Reconcile(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+type writer struct {
+	logFunc func(args ...interface{})
+}
+
+func (w writer) Write(p []byte) (n int, err error) {
+	w.logFunc(string(p))
+	return len(p), nil
 }
 
 /*
@@ -171,7 +186,10 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 
 		_ = err
 
-		myscope.CordonAndDrain(ctx)
+		err = myscope.CordonAndDrain(ctx)
+		if err != nil {
+			log.Fatalf("failed to drain: %v", err)
+		}
 
 		cred, err := azidentity.NewDefaultAzureCredential(nil)
 		if err != nil {
@@ -222,6 +240,44 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 
 		if err != nil {
 			_ = err
+		}
+
+		restConfig, err := remote.RESTConfig(ctx, "azuremachinepoolmachine-scope", c, client.ObjectKey{
+			Name:      myscope.ClusterName(),
+			Namespace: myscope.AzureMachinePoolMachine.Namespace,
+		})
+
+		if err != nil {
+			log.Fatalf("Error creating a remote client while deleting Machine, won't retry: %v", err)
+		}
+
+		kubeClient, err := kubernetes.NewForConfig(restConfig)
+
+		drainer := &kubedrain.Helper{
+			Client:              kubeClient,
+			Ctx:                 ctx,
+			Force:               true,
+			IgnoreAllDaemonSets: true,
+			DeleteEmptyDirData:  true,
+			GracePeriodSeconds:  -1,
+			Timeout:             20 * time.Second,
+			OnPodDeletedOrEvicted: func(pod *corev1.Pod, usingEviction bool) {
+				usingEviction = false
+			},
+			Out:    writer{klog.Info},
+			ErrOut: writer{klog.Error},
+		}
+		_ = drainer
+
+		node, found, err := myscope.GetNode(ctx)
+		if err != nil {
+			log.Fatalf("failed to find node: %v", err)
+		} else if !found {
+			log.Fatalf("failed to find node with the ProviderID")
+		}
+
+		if err := kubedrain.RunCordonOrUncordon(drainer, node, false); err != nil { // step 4
+			fmt.Println("Failed to uncordon")
 		}
 
 		galleryName := "GalleryInstantiation3"
