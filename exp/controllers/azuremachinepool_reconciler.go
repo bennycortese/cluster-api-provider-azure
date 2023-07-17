@@ -104,14 +104,14 @@ func (w writer) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func (s *azureMachinePoolService) Snapshot(subscriptionID string, cred *azidentity.DefaultAzureCredential, resourceGroup string, ctx context.Context, osDisk *string) error {
+func (s *azureMachinePoolService) Snapshot(subscriptionID string, cred *azidentity.DefaultAzureCredential, snapshotName string, resourceGroup string, location string, ctx context.Context, osDisk *string) error {
 	snapshotFactory, err := armcompute.NewSnapshotsClient(subscriptionID, cred, nil)
 	if err != nil {
 		log.Fatalf("failed to create snapshotFactory: %v", err)
 	}
 
-	_, err = snapshotFactory.BeginCreateOrUpdate(ctx, resourceGroup, "example-snapshot", armcompute.Snapshot{ // step 3
-		Location: to.Ptr("East US"),
+	_, err = snapshotFactory.BeginCreateOrUpdate(ctx, resourceGroup, snapshotName, armcompute.Snapshot{ // step 3
+		Location: to.Ptr(location),
 		Properties: &armcompute.SnapshotProperties{
 			CreationData: &armcompute.CreationData{
 				CreateOption: to.Ptr(armcompute.DiskCreateOptionCopy),
@@ -224,7 +224,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 			panic("Disk not found")
 		}
 
-		s.Snapshot(subscriptionID, cred, resourceGroup, ctx, osDisk)
+		s.Snapshot(subscriptionID, cred, "example1-snapshot", resourceGroup, galleryLocation, ctx, osDisk)
 
 		restConfig, err := remote.RESTConfig(ctx, "azuremachinepoolmachine-scope", c, client.ObjectKey{
 			Name:      myscope.ClusterName(),
