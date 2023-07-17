@@ -106,8 +106,9 @@ func (w writer) Write(p []byte) (n int, err error) {
 
 func (s *azureMachinePoolService) Snapshot(subscriptionID string, cred *azidentity.DefaultAzureCredential, snapshotName string, resourceGroup string, location string, ctx context.Context, osDisk *string) error {
 	snapshotFactory, err := armcompute.NewSnapshotsClient(subscriptionID, cred, nil)
+
 	if err != nil {
-		log.Fatalf("failed to create snapshotFactory: %v", err)
+		return errors.Wrapf(err, "Failed to create snapshot client")
 	}
 
 	_, err = snapshotFactory.BeginCreateOrUpdate(ctx, resourceGroup, snapshotName, armcompute.Snapshot{ // step 3
@@ -121,7 +122,7 @@ func (s *azureMachinePoolService) Snapshot(subscriptionID string, cred *azidenti
 	}, nil)
 
 	if err != nil {
-		_ = err
+		return errors.Wrapf(err, "Failed to create snapshot")
 	}
 
 	return nil
@@ -260,7 +261,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 			log.Fatalf("failed to find node with the ProviderID")
 		}
 
-		if err := kubedrain.RunCordonOrUncordon(drainer, node, false); err != nil { // step 4
+		if err := kubedrain.RunCordonOrUncordon(drainer, node, false); err != nil { // step 4, this removes SchedulingDisabled
 			fmt.Println("Failed to uncordon")
 		}
 
