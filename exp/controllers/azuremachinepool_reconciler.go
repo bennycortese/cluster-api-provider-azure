@@ -104,14 +104,13 @@ func (w writer) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-/*
-func () Snapshot(subscriptionID string, cred *DefaultAzureCredential,) error {
+func (s *azureMachinePoolService) Snapshot(subscriptionID string, cred *azidentity.DefaultAzureCredential, resourceGroup string, ctx context.Context, osDisk *string) error {
 	snapshotFactory, err := armcompute.NewSnapshotsClient(subscriptionID, cred, nil)
 	if err != nil {
 		log.Fatalf("failed to create snapshotFactory: %v", err)
 	}
 
-	_, err := snapshotFactory.BeginCreateOrUpdate(ctx, resourceGroup, "example-snapshot", armcompute.Snapshot{ // step 3
+	_, err = snapshotFactory.BeginCreateOrUpdate(ctx, resourceGroup, "example-snapshot", armcompute.Snapshot{ // step 3
 		Location: to.Ptr("East US"),
 		Properties: &armcompute.SnapshotProperties{
 			CreationData: &armcompute.CreationData{
@@ -124,7 +123,9 @@ func () Snapshot(subscriptionID string, cred *DefaultAzureCredential,) error {
 	if err != nil {
 		_ = err
 	}
-}*/
+
+	return nil
+}
 
 func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 	//var c client.Client // How to avoid this, maybe config := os.Getenv("KUBECONFIG")
@@ -223,24 +224,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 			panic("Disk not found")
 		}
 
-		snapshotFactory, err := armcompute.NewSnapshotsClient(subscriptionID, cred, nil)
-		if err != nil {
-			log.Fatalf("failed to create snapshotFactory: %v", err)
-		}
-
-		_, err = snapshotFactory.BeginCreateOrUpdate(ctx, resourceGroup, "example-snapshot", armcompute.Snapshot{ // step 3
-			Location: to.Ptr("East US"),
-			Properties: &armcompute.SnapshotProperties{
-				CreationData: &armcompute.CreationData{
-					CreateOption: to.Ptr(armcompute.DiskCreateOptionCopy),
-					SourceURI:    osDisk,
-				},
-			},
-		}, nil)
-
-		if err != nil {
-			_ = err
-		}
+		s.Snapshot(subscriptionID, cred, resourceGroup, ctx, osDisk)
 
 		restConfig, err := remote.RESTConfig(ctx, "azuremachinepoolmachine-scope", c, client.ObjectKey{
 			Name:      myscope.ClusterName(),
