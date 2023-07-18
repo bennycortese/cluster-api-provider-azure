@@ -63,8 +63,8 @@ Prototype Node - Whichever node is chosen to clone the OS image of and cache it 
 
 ## Summary
 
-The existing controllers will be modified to cache the Nodes’ OS image on a regular interval and update the model to use that image for future scale outs. This feature will allow for:
-- faster horizontal scaling 
+The existing controllers will be modified to cache the Nodes’ OS image on a regular interval and update the model to use that image for future scale outs. This feature will:
+- allow for faster horizontal scaling 
 - prevent security alerts from new nodes which immediately need a security update as those new nodes will now come with the security update already installed
 - help prevent users from needing to spin up warm nodes and overprovision
 
