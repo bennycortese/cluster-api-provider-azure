@@ -271,9 +271,13 @@ Example risks:
 1. A bad snapshot is taken, and we will mitigate this risk by having trying to prevent it before it happens by checking if things are ready and draining everything before taking the snapshot. Rolling back and determining if a bad snapshot is bad is out of scope for this proposal currently and will be for the operator to watch, so here we will simply try to prevent it as best as we can.
 1. A bad security patch or update might have been applied to a user’s node that they don’t want to be applied to future nodes. To mitigate this risk, we will make it easy for users to turn this feature off, and if they fix it on their original node the snapshot will be taken of that node instead.
 <<<<<<< HEAD
+<<<<<<< HEAD
 1. Deleting previous snapshots might not allow for new image instantiations from those snapshots since Azure Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. Instead deletion can be done after making sure the new image is successful for new deployments.
 =======
 1. Deleting previous snapshots might break things since Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. A way to mitigate this is to implement the deletion with the optional field for rolling update and if the prototyping is non-rolling slowly make all the images of the previously instantiated azuremachinepoolmachines match the current image, and when the previous image isn't being used anymore delete that version and the snapshot associated with it.
+=======
+1. Deleting previous snapshots might not allow for new image instantiations from those snapshots since Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. Instead deletion can be done after making sure the new image is successful for new deployments. Another way to mitigate this is to implement the deletion with the optional field for rolling update and if the prototyping is non-rolling slowly make all the images of the previously instantiated azuremachinepoolmachines match the current image, and when the previous image isn't being used anymore delete that version and the snapshot associated with it. 
+>>>>>>> 95482336 (Better specification of snapshot rollback risk/mitigation stuff)
 
 The following limits exist for Azure Compute Galleries:
 1. 100 galleries, per subscription, per region
