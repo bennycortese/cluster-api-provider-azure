@@ -128,6 +128,20 @@ func (s *azureMachinePoolService) Snapshot(subscriptionID string, cred *azidenti
 	return nil
 }
 
+func (s *azureMachinePoolService) MachinePoolMachineScopeFromAmpm(ampm *infrav1exp.AzureMachinePoolMachine) *scope.MachinePoolMachineScope {
+	myscope, err := scope.NewMachinePoolMachineScope(scope.MachinePoolMachineScopeParams{
+		Client:                  s.scope.GetClient(),
+		MachinePool:             s.scope.MachinePool,
+		AzureMachinePool:        s.scope.AzureMachinePool,
+		AzureMachinePoolMachine: ampm,
+		ClusterScope:            s.scope.ClusterScoper,
+	})
+	if err != nil {
+		return nil
+	}
+	return myscope
+}
+
 func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 	//var c client.Client // How to avoid this, maybe config := os.Getenv("KUBECONFIG")
 
