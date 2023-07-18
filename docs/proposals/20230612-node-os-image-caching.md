@@ -368,10 +368,14 @@ The feature itself should not depend significantly on the version of CAPI and wi
 - [ ] 06/07/2023: First round of feedback from community
 - [ ] 06/12/2023: Open proposal PR [https://github.com/kubernetes-sigs/cluster-api-provider-azure/pull/3624]
 <<<<<<< HEAD
+<<<<<<< HEAD
 - [ ] 06/15/2023: Proposed idea and got some feedback on the PR from the community meeting for CAPZ: [https://docs.google.com/document/d/1ushaVqAKYnZ2VN_aa3GyKlS4kEd6bSug13xaXOakAQI/edit#heading=h.pxsq37pzkbdq]
 =======
 - [ ] 06/15/2023: Proposed idea and got some feedback on the PR from the [https://docs.google.com/document/d/1ushaVqAKYnZ2VN_aa3GyKlS4kEd6bSug13xaXOakAQI/edit#heading=h.pxsq37pzkbdq]
 >>>>>>> 6e96d5ca (Implementation history stuff)
+=======
+- [ ] 06/15/2023: Proposed idea and got some feedback on the PR from the community meeting for CAPZ: [https://docs.google.com/document/d/1ushaVqAKYnZ2VN_aa3GyKlS4kEd6bSug13xaXOakAQI/edit#heading=h.pxsq37pzkbdq]
+>>>>>>> b603efd5 (Fixed some of the specification of the implementation history stuff)
 - [ ] 07/17/2023: Opened issue for features relating to this PR [https://github.com/kubernetes-sigs/cluster-api-provider-azure/issues/3737]
 
 <!-- Links -->
