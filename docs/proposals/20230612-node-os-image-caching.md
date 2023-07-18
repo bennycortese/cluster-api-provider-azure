@@ -54,7 +54,14 @@ Prototype Node - Whichever node is chosen to clone the OS image of and cache it 
 
 ## Summary
 
+<<<<<<< HEAD
 This proposal introduces modifications to the `AzureMachinePool` controller for an optional feature which will cache the Nodes’ OS image on a regular interval and update the model to use that image for future scale outs.
+=======
+The existing controllers will be modified to cache the Nodes’ OS image on a regular interval and update the model to use that image for future scale outs. This feature will:
+- allow for faster horizontal scaling 
+- prevent security alerts from new nodes which immediately need a security update as those new nodes will now come with the security update already installed
+- help prevent users from needing to spin up warm nodes and overprovision
+>>>>>>> 1d8b9de2 (Smoothening of controller improvement explanations)
 
 ## Motivation
 
