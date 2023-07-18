@@ -59,7 +59,7 @@ Compute Image Gallery - A repository that is an Azure Resource for managing and 
 
 Snapshot - A static copy of the image at the point in time that it is taken
 
-Prototype Node - Whichever node has been the most steadily healthy for the longest (so it has the oldest last transition to ready state) and is chosen off of that metric as the one to clone the OS image of and cache it for future nodes to use
+Prototype Node - Whichever node is chosen to clone the OS image of and cache it for future nodes to use
 
 ## Summary
 
