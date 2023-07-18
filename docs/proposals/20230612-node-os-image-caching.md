@@ -254,11 +254,11 @@ The feature itself should not depend significantly on the version of CAPI and wi
 
 ## Implementation History
 
-- [ ] MM/DD/YYYY: Proposed idea in an issue or [community meeting]
-- [ ] MM/DD/YYYY: Compile a Google Doc following the CAEP template (link here)
-- [ ] MM/DD/YYYY: First round of feedback from community
-- [ ] MM/DD/YYYY: Present proposal at a [community meeting]
-- [ ] MM/DD/YYYY: Open proposal PR
+- [ ] 06/06/2023: Starting Compiling a Google Doc following the CAEP template
+- [ ] 06/07/2023: First round of feedback from community
+- [ ] 06/12/2023: Open proposal PR [https://github.com/kubernetes-sigs/cluster-api-provider-azure/pull/3624]
+- [ ] 06/15/2023: Proposed idea and got some feedback on the PR from the [https://docs.google.com/document/d/1ushaVqAKYnZ2VN_aa3GyKlS4kEd6bSug13xaXOakAQI/edit#heading=h.pxsq37pzkbdq]
+- [ ] 07/17/2023: Opened issue for features relating to this PR [https://github.com/kubernetes-sigs/cluster-api-provider-azure/issues/3737]
 
 <!-- Links -->
 [community meeting]: https://docs.google.com/document/d/1ushaVqAKYnZ2VN_aa3GyKlS4kEd6bSug13xaXOakAQI/edit#heading=h.pxsq37pzkbdq
