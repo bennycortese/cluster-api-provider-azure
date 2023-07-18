@@ -74,7 +74,7 @@ A model scenario would be an operator spinning up a CAPZ cluster and having this
 
 ### Goals
 
-1. A solution using the Node Prototype pattern which cache’s nodes’ OS image on a regular interval and replaces it as a new Machine or MachinePool template VM image
+1. A solution using the Node Prototype pattern which cache’s nodes’ OS image on a regular interval and replaces it as a new MachinePool template VM image
 1. Faster horizontal scale outs of applications
 1. Prevent security breaking issues on node bootup from security updates being required immediately
 
