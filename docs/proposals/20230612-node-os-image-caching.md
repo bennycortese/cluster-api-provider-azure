@@ -305,7 +305,13 @@ No currently known alternatives exist which are public and have been implemented
 In terms of how we choose a node as the prototype node, lots of different metrics or heuristics can be used like manually creating a temporary prototype for testing, having the fastest ready time, or anything else which is seen as typically good but a more generalist approach is outlined here since more specific methods may not be as helpful for certain operators.
 
 For architectural details of where else the code could exist, the controller section makes the most sense since this proposal will be constantly modifying the state of our objects, but theoretically it could be largely put into hack with shell scripts and then a controller could simply be ordered to trigger that shell script, but this is less maintainable in the long run and not as preferred.
+<<<<<<< HEAD
 We can put it in the `AzureMachinePool` controller or make it another controller, both are viable options and putting it in the `AzureMachinePool` controller will be faster to implement versus another controller will allow for a cleaner codebase overall. 
+=======
+We can put it in the AzureMachinePool controller or make it another controller, both are viable options and putting it in the AzureMachinePool controller will be faster to implement versus another controller will allow for a cleaner codebase overall. 
+
+In terms of rollout strategies, we could prevent exposing the strategy altogether and just make it so that caching doesn't automatically rollout an update to all the other nodes. This would give users less customizability but in a typically expected use case this will effectively be the exact same end result.
+>>>>>>> 9df11170 (Mentioned difference in where we can put this in the codebase)
 
 ## Upgrade Strategy
 
