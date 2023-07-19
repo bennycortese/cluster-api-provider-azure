@@ -192,17 +192,13 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		galleryLocation := s.scope.ClusterScoper.Location()
 		vmssName := machinePoolName
 
-		myscope, err := scope.NewMachinePoolMachineScope(scope.MachinePoolMachineScopeParams{
-			Client:                  c,
-			MachinePool:             s.scope.MachinePool,
-			AzureMachinePool:        amp,
-			AzureMachinePoolMachine: healthyAmpm,
-			ClusterScope:            s.scope.ClusterScoper,
-		})
+		myscope := s.MachinePoolMachineScopeFromAmpm(healthyAmpm)
 
-		_ = err
+		if myscope == nil {
+			log.Fatalf("failed to construct machinepoolmachinescope")
+		}
 
-		err = myscope.CordonAndDrain(ctx)
+		err := myscope.CordonAndDrain(ctx)
 		if err != nil {
 			log.Fatalf("failed to drain: %v", err)
 		}
@@ -251,6 +247,10 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		}
 
 		kubeClient, err := kubernetes.NewForConfig(restConfig)
+
+		if err != nil {
+			log.Fatalf("Error creating a kube client while restarting Machine, won't retry: %v", err)
+		}
 
 		drainer := &kubedrain.Helper{
 			Client:              kubeClient,
@@ -343,7 +343,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 				StorageProfile: &armcompute.GalleryImageVersionStorageProfile{
 					OSDiskImage: &armcompute.GalleryOSDiskImage{
 						Source: &armcompute.GalleryDiskImageSource{
-							ID: to.Ptr("subscriptions/" + subscriptionID + "/resourceGroups/" + resourceGroup + "/providers/Microsoft.Compute/snapshots/example-snapshot"),
+							ID: to.Ptr("subscriptions/" + subscriptionID + "/resourceGroups/" + resourceGroup + "/providers/Microsoft.Compute/snapshots/example1-snapshot"),
 						},
 					},
 				},
