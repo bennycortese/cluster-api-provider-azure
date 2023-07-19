@@ -20,7 +20,7 @@ Integrate Node OS Image caching with CAPZ
 
 ## Table of Contents
 
-- [Title](#title)
+- [Integrate Node OS Image caching with CAPZ](#integrate-node-os-image-caching-with-capz)
   - [Table of Contents](#table-of-contents)
   - [Glossary](#glossary)
   - [Summary](#summary)
@@ -29,15 +29,6 @@ Integrate Node OS Image caching with CAPZ
     - [Non-Goals/Future Work](#non-goalsfuture-work)
   - [Proposal](#proposal)
     - [User Stories](#user-stories)
-      - [Story 1](#story-1)
-      - [Story 2](#story-2)
-    - [Requirements (Optional)](#requirements-optional)
-      - [Functional Requirements](#functional-requirements)
-        - [FR1](#fr1)
-        - [FR2](#fr2)
-      - [Non-Functional Requirements](#non-functional-requirements)
-        - [NFR1](#nfr1)
-        - [NFR2](#nfr2)
     - [Implementation Details/Notes/Constraints](#implementation-detailsnotesconstraints)
     - [Security Model](#security-model)
     - [Risks and Mitigations](#risks-and-mitigations)
