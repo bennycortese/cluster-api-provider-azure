@@ -22,6 +22,7 @@ Integrate Node OS Image caching with CAPZ
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 - [Integrate Node OS Image caching with CAPZ](#title)
 =======
 - [Integrate Node OS Image caching with CAPZ](#integrate-node-os-image-caching-with-capz)
@@ -29,6 +30,9 @@ Integrate Node OS Image caching with CAPZ
 =======
 - [Integrate Node OS Image caching with CAPZ](#Title)
 >>>>>>> 6a392839 (Table of contents redirects update)
+=======
+- [Integrate Node OS Image caching with CAPZ](#title)
+>>>>>>> d538c919 (Fixed case sensitive nature of linking)
   - [Table of Contents](#table-of-contents)
   - [Glossary](#glossary)
   - [Summary](#summary)
