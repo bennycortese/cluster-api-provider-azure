@@ -317,6 +317,7 @@ Example risks:
 1. Deleting previous snapshots might not allow for new image instantiations from those snapshots since Azure Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. Instead deletion can be done after making sure the new image is successful for new deployments.
 >>>>>>> 0325547a (More consistency in the docs with azure compute gallery instead of compute gallery)
 
+<<<<<<< HEAD
 The following limits exist for Azure Compute Galleries:
 1. 100 galleries, per subscription, per region
 1. 1,000 image definitions, per subscription, per region
@@ -341,6 +342,10 @@ Thus the feature will not work for OS images with disks attached greater than 1 
 <<<<<<< HEAD
 The UX will mostly be impactful towards operators and members of the CAPZ community will test these changes and give feedback on them. Security will also likely follow in terms of how it gets reviewed, but no major security problems should be possible from this change. For folks who work outside the SIG or subproject, they should hopefully have faster horizontal scaling without needing to directly do anything outside of setting an environment variable on clusterctl initialization and updating their `AzureMachinePools`.
 =======
+=======
+Link to page with Azure Compute Gallery limits: https://learn.microsoft.com/en-us/azure/virtual-machines/azure-compute-gallery
+
+>>>>>>> a0ae969c (Removed direct mentions to pricing and certain limits and instead just provide a link to the doc as to prevent things from getting outdated over time)
 The UX will mostly be impactful towards operators and members of the CAPZ community will test these changes and give feedback on them. Security will also likely follow in terms of how it gets reviewed, but no major security problems should be possible from this change. For folks who work outside the SIG or subproject, they should hopefully have faster horizontal scaling without needing to directly do anything outside of setting an environment variable on clusterctl initialization and updating their AzureMachinePools.
 >>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 
