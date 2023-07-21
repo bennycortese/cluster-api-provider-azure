@@ -171,10 +171,14 @@ status:
 ```
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a Azure Compute Gallery image, delete the snapshot, and then configure the `AzureMachinePool` spec to use that Azure Compute Gallery image. After, it will store the current time as its timestamp. As a note, for the first implementation of this feature we will require the user to also use a Azure Compute Gallery image.
 =======
 When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a compute image gallery image, delete the snapshot, and then configure the AzureMachinePool specs to use that compute image gallery image. After, it will store the current time as its timestamp. As a note, for the first implementation of this feature we will require the user to also use a compute image gallery image.
 >>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
+=======
+When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a Azure Compute Gallery image, delete the snapshot, and then configure the AzureMachinePool specs to use that  Azure Compute Gallery image. After, it will store the current time as its timestamp. As a note, for the first implementation of this feature we will require the user to also use a Azure Compute Gallery image.
+>>>>>>> 0325547a (More consistency in the docs with azure compute gallery instead of compute gallery)
 
 Diagram of the Node OS Caching Process:
 
@@ -295,6 +299,7 @@ Example risks:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 1. Deleting previous snapshots might not allow for new image instantiations from those snapshots since Azure Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. Instead deletion can be done after making sure the new image is successful for new deployments.
 =======
 1. Deleting previous snapshots might break things since Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. A way to mitigate this is to implement the deletion with the optional field for rolling update and if the prototyping is non-rolling slowly make all the images of the previously instantiated azuremachinepoolmachines match the current image, and when the previous image isn't being used anymore delete that version and the snapshot associated with it.
@@ -304,6 +309,9 @@ Example risks:
 =======
 1. Deleting previous snapshots might not allow for new image instantiations from those snapshots since Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. Instead deletion can be done after making sure the new image is successful for new deployments.
 >>>>>>> 8f42dcb9 (Removed mention of adding an optional field for rollouts/discussion around that topic entirely because the edge cases where we need this to be togglable are few enough that it's not worth mentioning here)
+=======
+1. Deleting previous snapshots might not allow for new image instantiations from those snapshots since Azure Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. Instead deletion can be done after making sure the new image is successful for new deployments.
+>>>>>>> 0325547a (More consistency in the docs with azure compute gallery instead of compute gallery)
 
 The following limits exist for Azure Compute Galleries:
 1. 100 galleries, per subscription, per region
@@ -311,8 +319,12 @@ The following limits exist for Azure Compute Galleries:
 1. 10,000 image versions, per subscription, per region
 1. 100 replicas per image version however 50 replicas should be sufficient for most use cases
 1. Any disk attached to the image must be less than or equal to 1 TB in size
+<<<<<<< HEAD
 1. Resource move isn't supported for Azure compute gallery resources
 >>>>>>> ec39edc9 (Added discussion of slight risk and mitigation with lots of snapshots, shouldn't be too big of a problem if we keep it in mind)
+=======
+1. Resource move isn't supported for Azure Compute Gallery resources
+>>>>>>> 0325547a (More consistency in the docs with azure compute gallery instead of compute gallery)
 
 Link to page with Azure Compute Gallery limits: https://learn.microsoft.com/en-us/azure/virtual-machines/azure-compute-gallery
 
