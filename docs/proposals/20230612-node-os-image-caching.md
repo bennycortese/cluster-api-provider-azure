@@ -62,8 +62,10 @@ We want users to have faster horizontal scaling and require fewer warm nodes and
 
 ### Goals
 
-1. A solution using the Node Prototype pattern which cache’s nodes’ OS image on a regular interval and replaces it as a new MachinePool template VM image
-1. Faster horizontal scale outs of applications
+1. Make the feature configurable
+1. Avoid causing and breaking changes to previous users
+1. Successfully be able to snapshot and switch to the new image created from that snapshot
+1. Show that faster horizontal scaling speeds have been achieved with this feature
 1. Prevent security breaking issues on node bootup from security updates being required immediately
 
 We will know we’ve succeeded when we can benchmark speed increases and successful image changes.
