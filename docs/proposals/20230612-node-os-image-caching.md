@@ -78,10 +78,14 @@ The existing controllers will be modified to cache the Nodes’ OS image on a re
 ## Motivation
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 We want users to have faster horizontal scaling and require fewer warm nodes and overprovisioning to avoid this problem, especially since the new nodes will have the container images of the applications it will run pre-cached so pods will run quicker when scheduled. This feature will also help users have better security compliance as new nodes will already be compliant instead of needing to patch.
 =======
 A model scenario would be an operator spinning up a CAPZ cluster and having this feature be able to be toggled on or off. If it was toggled on, then as the months passed and more security updates and patches needed to be applied to the operator’s node OS image, these changes would be cached on a regular interval and the operator would no longer have to wait for these changes to apply on new node creations. Operators will also have the option of immediately propagating updates to nodes according to a RollingUpdate configuration or rely on the dynamic nature of the cluster to scale in updated nodes as needed by toggling a configuration. As a result, users will have faster horizontal scaling and require fewer warm nodes and overprovisioning to avoid this problem, especially since the new nodes will have the container images of the applications it will run pre-cached so pods will run quicker when scheduled. This feature will also help users have better security compliance as new nodes will already be compliant instead of needing to patch.
 >>>>>>> 9249a9b7 (Yet another spacing diff)
+=======
+A model scenario would be an operator spinning up a CAPZ cluster and having this feature be able to be toggled on or off. If it was toggled on, then as the months passed and more security updates and patches needed to be applied to the operator’s node OS image, these changes would be cached on a regular interval and the operator would no longer have to wait for these changes to apply on new node creations. As a result, users will have faster horizontal scaling and require fewer warm nodes and overprovisioning to avoid this problem, especially since the new nodes will have the container images of the applications it will run pre-cached so pods will run quicker when scheduled. This feature will also help users have better security compliance as new nodes will already be compliant instead of needing to patch.
+>>>>>>> 8f42dcb9 (Removed mention of adding an optional field for rollouts/discussion around that topic entirely because the edge cases where we need this to be togglable are few enough that it's not worth mentioning here)
 
 ### Goals
 
@@ -257,8 +261,6 @@ In terms of when to take a snapshot, a day is given as a general example which s
 In terms of data model changes, AzureMachinePool will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachinePool we will add a new optional field under spec.template.image called nodePrototyping which will be enabled if present and it have a required field under it called interval which will map to an interval of 1 day or 24 hours by default.
 >>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 
-For AzureMachinePool, we will also add an optional field under spec.strategy.rollingUpdate called prototypeAutomaticRollout which will be set to false by default since we don't want the replacement of a node OS image to automatically trigger a rolling update of all the nodes. This is because the new image will be functionally identical to the old one outside of name itself (since the old nodes will all have the update and security patch contents already present). If for some reason the operator wants to always trigger this rollout (maybe if they programmatically use the image names themselves), then they can simply set this field to true.
-
 Example AzureMachinePool yaml:
 >>>>>>> 0e50070c (Moved data model changes around a bit to follow a more seperate blocking of them with YAML examples after, all AzureMachineTemplate changes are currently a subset of AzureMachinePool changes so it's slightly clunky)
 ```yaml
@@ -288,12 +290,16 @@ Example risks:
 1. A bad security patch or update might have been applied to a user’s node that they don’t want to be applied to future nodes. To mitigate this risk, we will make it easy for users to turn this feature off, and if they fix it on their original node the snapshot will be taken of that node instead.
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 1. Deleting previous snapshots might not allow for new image instantiations from those snapshots since Azure Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. Instead deletion can be done after making sure the new image is successful for new deployments.
 =======
 1. Deleting previous snapshots might break things since Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. A way to mitigate this is to implement the deletion with the optional field for rolling update and if the prototyping is non-rolling slowly make all the images of the previously instantiated azuremachinepoolmachines match the current image, and when the previous image isn't being used anymore delete that version and the snapshot associated with it.
 =======
 1. Deleting previous snapshots might not allow for new image instantiations from those snapshots since Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. Instead deletion can be done after making sure the new image is successful for new deployments. Another way to mitigate this is to implement the deletion with the optional field for rolling update and if the prototyping is non-rolling slowly make all the images of the previously instantiated azuremachinepoolmachines match the current image, and when the previous image isn't being used anymore delete that version and the snapshot associated with it. 
 >>>>>>> 95482336 (Better specification of snapshot rollback risk/mitigation stuff)
+=======
+1. Deleting previous snapshots might not allow for new image instantiations from those snapshots since Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. Instead deletion can be done after making sure the new image is successful for new deployments.
+>>>>>>> 8f42dcb9 (Removed mention of adding an optional field for rollouts/discussion around that topic entirely because the edge cases where we need this to be togglable are few enough that it's not worth mentioning here)
 
 The following limits exist for Azure Compute Galleries:
 1. 100 galleries, per subscription, per region
@@ -330,9 +336,12 @@ We can put it in the `AzureMachinePool` controller or make it another controller
 =======
 We can put it in the AzureMachinePool controller or make it another controller, both are viable options and putting it in the AzureMachinePool controller will be faster to implement versus another controller will allow for a cleaner codebase overall. 
 
+<<<<<<< HEAD
 In terms of rollout strategies, we could prevent exposing the strategy altogether and just make it so that caching doesn't automatically rollout an update to all the other nodes. This would give users less customizability but in a typically expected use case this will effectively be the exact same end result.
 >>>>>>> 9df11170 (Mentioned difference in where we can put this in the codebase)
 
+=======
+>>>>>>> 8f42dcb9 (Removed mention of adding an optional field for rollouts/discussion around that topic entirely because the edge cases where we need this to be togglable are few enough that it's not worth mentioning here)
 ## Upgrade Strategy
 
 <<<<<<< HEAD
