@@ -205,6 +205,7 @@ As for why the healthy node has to be shut down while creating a snapshot of it,
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 In terms of how a healthy node would be selected, there is already state data present on each AzureMachinePoolMachine which we can use and is listed in the examples below. An ideal node would be one which is running and healthy. Whichever node has been running and healthy for the longest amount of time should be chosen as it’s the most overall stable. This means that for AzureMachinePoolMachines we will take the node with the earliest creation time from metadata.creationTimestamp and has latestModelApplied : true present if it is an AzureMachinePoolMachine since this means that any user changes to the OS image have been rolled out already on this node. If it is an AzureMachine, since they tend to be updated together with automatic security updates and are immutable in regard to user changes to the OS image, we don't need to worry about a field like latestModelApplied. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication. In terms of knowing if the node os image has had updates that are not user made (so like automatic kernel patches), for the first development of this feature we won't know but all nodes should roughly be updated together so it will be fine in most cases.
 >>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
 =======
@@ -213,6 +214,11 @@ In terms of how a healthy node would be selected, there is already state data pr
 =======
 In terms of how a healthy node would be selected, there is already state data present on each AzureMachinePoolMachine which we can use and is listed in the examples below. An ideal node would be one which is running and healthy. Whichever node has been running and healthy for the longest amount of time should be chosen as it’s the most overall stable. This means that for AzureMachinePoolMachines we will take the node with the earliest creation time from metadata.creationTimestamp and has latestModelApplied : true present if it is an AzureMachinePoolMachine since this means that any user changes to the OS image have been rolled out already on this node. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication. In terms of knowing if the node os image has had updates that are not user made (so like automatic kernel patches), for the first development of this feature we won't know but all nodes in a cluster are configured to regularly automatically apply security patches to system packages.
 >>>>>>> 2b85ba67 (More accurate description than all nodes will roughly update together, instead discussing how all will regularly apply security patches to system packages)
+=======
+Healthy Node Selection:
+
+There is already state data present on each AzureMachinePoolMachine which we can use and is listed in the examples below. An ideal node would be one which is running and healthy. Whichever node has been running and healthy for the longest amount of time should be chosen as it’s the most overall stable. This means that for AzureMachinePoolMachines we will take the node with the earliest creation time from metadata.creationTimestamp and has latestModelApplied : true present if it is an AzureMachinePoolMachine since this means that any user changes to the OS image have been rolled out already on this node. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication. In terms of knowing if the node os image has had updates that are not user made (so like automatic kernel patches), for the first development of this feature we won't know but all nodes in a cluster are configured to regularly automatically apply security patches to system packages.
+>>>>>>> bd61395a (broke up implementation details into different sections)
 
 There is already state data present on each `AzureMachinePoolMachine` which we can use and is listed in the examples below. An ideal node would be one which is running and healthy. Whichever node has been running and healthy for the longest amount of time should be chosen as it’s the most overall stable. This means that for `AzureMachinePoolMachines` we will take the node with the earliest creation time from `metadata.creationTimestamp` and has `latestModelApplied : true` present if it is an `AzureMachinePoolMachine` since this means that any user changes to the OS image have been rolled out already on this node. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication. In terms of knowing if the node os image has had updates that are not user made (so like automatic kernel patches), for the first development of this feature we won't know but all nodes in a cluster are configured to regularly automatically apply security patches to system packages.
 
@@ -240,6 +246,7 @@ status:
   ready: true
 ```
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 #### When to take a Snapshot
 
@@ -272,6 +279,15 @@ In terms of when to take a snapshot, a day is given as a general example which s
 
 In terms of data model changes, AzureMachinePool will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachinePool we will add a new optional field under spec.template.image called nodePrototyping which will be enabled if present and it have a required field under it called interval which will map to an interval of 1 day or 24 hours by default.
 >>>>>>> 753fea9d (Removed AzureMachineTemplate and AzureMachine references and pushed it to future work to not have to deal with immutability/scoping for now)
+=======
+When to take a Snapshot:
+
+A day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters.
+
+Data model changes:
+
+AzureMachinePool will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachinePool we will add a new optional field under spec.template.image called nodePrototyping which will be enabled if present and it have a required field under it called interval which will map to an interval of 1 day or 24 hours by default.
+>>>>>>> bd61395a (broke up implementation details into different sections)
 
 Example AzureMachinePool yaml:
 >>>>>>> 0e50070c (Moved data model changes around a bit to follow a more seperate blocking of them with YAML examples after, all AzureMachineTemplate changes are currently a subset of AzureMachinePool changes so it's slightly clunky)
