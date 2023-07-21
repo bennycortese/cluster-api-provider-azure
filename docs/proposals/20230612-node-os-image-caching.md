@@ -46,7 +46,7 @@ Node Prototype Pattern - Where we take a known good/working OS snapshot and make
 
 Warm nodes - The concept of keeping up extraneous and unused nodes to prevent having to wait for patches or security updates, thus allowing you to have those nodes ready when more users try to use your service without the wait times.
 
-Compute Image Gallery - A repository that is an Azure Resource for managing and sharing images
+Azure Compute Gallery - An Azure Resource for managing and sharing artifacts such as images
 
 Snapshot - A static copy of the image at the point in time that it is taken
 
