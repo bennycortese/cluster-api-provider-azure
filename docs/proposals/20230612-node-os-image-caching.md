@@ -113,7 +113,7 @@ Example of how the timestamp will be maintained in the AzureMachinePool:
 
 ```yaml
 status:
-  lastPrototype: "2023-06-12T23:14:55Z"
+  lastImagePrototype: "2023-06-12T23:14:55Z"
 ```
 
 When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a Azure Compute Gallery image, delete the snapshot, and then configure the AzureMachinePool specs to use that  Azure Compute Gallery image. After, it will store the current time as its timestamp. As a note, for the first implementation of this feature we will require the user to also use a Azure Compute Gallery image.
