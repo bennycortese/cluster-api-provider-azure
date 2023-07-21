@@ -104,7 +104,7 @@ An operator will be able to decide to turn the feature on or off with an environ
 Example of the environment variable being turned on:
 
 ```
-export AZURE_OS_CACHING=true
+export AZURE_NODE_OS_CACHING=true
 ```
 
 The controller will maintain a timestamp in each AzureMachinePool, and when the current time is the chosen interval ahead or more, the controller will perform the caching. Since the current controller manager requeues all objects every ten minutes by default the objects will be requeued shortly after its due time to be recached. This is because typically we expect to cache every 24 hours and it is very unexpected that this won't be frequent enough considering normal patch rates. 
