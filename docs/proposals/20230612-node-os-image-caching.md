@@ -116,7 +116,7 @@ status:
   lastPrototype: "2023-06-12T23:14:55Z"
 ```
 
-When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a compute image gallery image, delete the snapshot, and then configure the AzureMachinePool specs to use that compute image gallery image. After, it will store the current time as its timestamp. As a note, for the first implementation of this feature we will require the user to also use a compute image gallery image.
+When the process is started it should go through the nodes of the cluster, choose a healthy node, shut it down, take a snapshot of it, restart it, create a Azure Compute Gallery image, delete the snapshot, and then configure the AzureMachinePool specs to use that  Azure Compute Gallery image. After, it will store the current time as its timestamp. As a note, for the first implementation of this feature we will require the user to also use a Azure Compute Gallery image.
 
 Diagram of the Node OS Caching Process:
 
@@ -176,7 +176,7 @@ This proposal requires CAPZ to have write permissions for azureMachinePools in o
 Example risks:
 1. A bad snapshot is taken, and we will mitigate this risk by having trying to prevent it before it happens by checking if things are ready and draining everything before taking the snapshot. Rolling back and determining if a bad snapshot is bad is out of scope for this proposal currently and will be for the operator to watch, so here we will simply try to prevent it as best as we can.
 1. A bad security patch or update might have been applied to a user’s node that they don’t want to be applied to future nodes. To mitigate this risk, we will make it easy for users to turn this feature off, and if they fix it on their original node the snapshot will be taken of that node instead.
-1. Deleting previous snapshots might not allow for new image instantiations from those snapshots since Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. Instead deletion can be done after making sure the new image is successful for new deployments.
+1. Deleting previous snapshots might not allow for new image instantiations from those snapshots since Azure Compute Gallery Image Definition Version instances may depend directly on those snapshots still being there. Instead deletion can be done after making sure the new image is successful for new deployments.
 
 The following limits exist for Azure Compute Galleries:
 1. 100 galleries, per subscription, per region
@@ -184,7 +184,7 @@ The following limits exist for Azure Compute Galleries:
 1. 10,000 image versions, per subscription, per region
 1. 100 replicas per image version however 50 replicas should be sufficient for most use cases
 1. Any disk attached to the image must be less than or equal to 1 TB in size
-1. Resource move isn't supported for Azure compute gallery resources
+1. Resource move isn't supported for Azure Compute Gallery resources
 
 Link to page with Azure Compute Gallery limits: https://learn.microsoft.com/en-us/azure/virtual-machines/azure-compute-gallery
 
