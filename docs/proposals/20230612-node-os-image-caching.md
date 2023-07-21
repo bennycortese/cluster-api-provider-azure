@@ -180,6 +180,8 @@ Example risks:
 
 Link to page with Azure Compute Gallery limits: https://learn.microsoft.com/en-us/azure/virtual-machines/azure-compute-gallery
 
+Link to page with snapshot pricing (Azure Compute Galleries themselves are free): https://azure.microsoft.com/en-us/pricing/details/managed-disks/
+
 The UX will mostly be impactful towards operators and members of the CAPZ community will test these changes and give feedback on them. Security will also likely follow in terms of how it gets reviewed, but no major security problems should be possible from this change. For folks who work outside the SIG or subproject, they should hopefully have faster horizontal scaling without needing to directly do anything outside of setting an environment variable on clusterctl initialization and updating their AzureMachinePools.
 
 ## Alternatives
