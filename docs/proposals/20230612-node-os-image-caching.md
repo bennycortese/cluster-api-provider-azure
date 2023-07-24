@@ -54,7 +54,7 @@ Prototype Node - Whichever node is chosen to clone the OS image of and cache it 
 
 ## Summary
 
-The operator can toggle this feature on or off to cache the Nodes’ OS image on a regular interval and update the model to use that image for future scale outs.
+This proposal introduces modifications to the `AzureMachinePool` controller for an optional feature which will cache the Nodes’ OS image on a regular interval and update the model to use that image for future scale outs.
 
 ## Motivation
 
