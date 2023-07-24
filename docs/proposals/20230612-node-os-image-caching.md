@@ -126,7 +126,7 @@ Diagram of the Node OS Caching Process:
 
 As for why the healthy node has to be shut down while creating a snapshot of it, if it isn’t shut down first then pods can be scheduled as the snapshot is taken which will cause some dangerous states in terms of how it exists after being utilized by the `AzureMachinePools`.
 
-Healthy Node Selection:
+#### Healthy Node Selection
 
 There is already state data present on each `AzureMachinePoolMachine` which we can use and is listed in the examples below. An ideal node would be one which is running and healthy. Whichever node has been running and healthy for the longest amount of time should be chosen as it’s the most overall stable. This means that for `AzureMachinePoolMachines` we will take the node with the earliest creation time from `metadata.creationTimestamp` and has `latestModelApplied : true` present if it is an `AzureMachinePoolMachine` since this means that any user changes to the OS image have been rolled out already on this node. As the prototype is always from a successfully healthy and working node the image is always known to be working before being chosen for replication. In terms of knowing if the node os image has had updates that are not user made (so like automatic kernel patches), for the first development of this feature we won't know but all nodes in a cluster are configured to regularly automatically apply security patches to system packages.
 
@@ -154,11 +154,11 @@ status:
   ready: true
 ```
 
-When to take a Snapshot:
+#### When to take a Snapshot
 
 A day is given as a general example which should be good for typical use but the specification of how often will be customizable as we know that certain operators have different strategies and use cases for how they’re running their services on our clusters.
 
-Data model changes:
+#### Data model changes
 
 `AzureMachinePool` will be changed and the proposed changes are purely additive and nonbreaking. No removals should be required to the data model. For `AzureMachinePool` we will add a new optional field under `spec.template.image` called `nodePrototyping` which will be enabled if present and it have a required field under it called interval which will map to an interval of 1 day or 24 hours by default.
 
