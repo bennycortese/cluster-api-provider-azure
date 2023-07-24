@@ -322,6 +322,7 @@ A day is given as a general example which should be good for typical use but the
 Data model changes:
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 AzureMachinePool will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For AzureMachinePool we will add a new optional field under spec.template.image called nodePrototyping which will be enabled if present and it have a required field under it called interval which will map to an interval of 1 day or 24 hours by default.
 >>>>>>> bd61395a (broke up implementation details into different sections)
 
@@ -329,6 +330,9 @@ Example AzureMachinePool yaml:
 >>>>>>> 0e50070c (Moved data model changes around a bit to follow a more seperate blocking of them with YAML examples after, all AzureMachineTemplate changes are currently a subset of AzureMachinePool changes so it's slightly clunky)
 =======
 `AzureMachinePool` will be changed and the changes we expect will be purely additive and nonbreaking. No removals should be required to the data model. For `AzureMachinePool` we will add a new optional field under `spec.template.image` called `nodePrototyping` which will be enabled if present and it have a required field under it called interval which will map to an interval of 1 day or 24 hours by default.
+=======
+`AzureMachinePool` will be changed and the proposed changes are purely additive and nonbreaking. No removals should be required to the data model. For `AzureMachinePool` we will add a new optional field under `spec.template.image` called `nodePrototyping` which will be enabled if present and it have a required field under it called interval which will map to an interval of 1 day or 24 hours by default.
+>>>>>>> c3212e76 (Update to be more assertive in the document)
 
 Example `AzureMachinePool` yaml:
 >>>>>>> 39d4b003 (Added code mode to all the objects that are directly code object references)
