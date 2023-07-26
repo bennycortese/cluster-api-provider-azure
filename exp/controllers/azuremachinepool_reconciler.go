@@ -45,6 +45,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type writer struct {
+	logFunc func(args ...interface{})
+}
+
+func (w writer) Write(p []byte) (n int, err error) {
+	w.logFunc(string(p))
+	return len(p), nil
+}
+
 // azureMachinePoolService is the group of services called by the AzureMachinePool controller.
 type azureMachinePoolService struct {
 	scope    *scope.MachinePoolScope
