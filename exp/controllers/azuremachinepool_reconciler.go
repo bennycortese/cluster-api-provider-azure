@@ -141,6 +141,53 @@ func (s *azureMachinePoolService) Snapshot(subscriptionID string, cred *azidenti
 	return nil
 }
 
+func (s *azureMachinePoolService) cleanupCommands(ctx context.Context, node *corev1.Node, kubeClient *kubernetes.Clientset) error {
+	sleepy := "sleep 4"
+	cat_test := "/bin/cp -f /dev/null /etc/hostname"
+	rm_command := "/bin/rm -rf /var/lib/cloud/data/* /var/lib/cloud/instances/* /var/lib/waagent/history/* /var/lib/waagent/events/* /var/log/journal/*"
+	replace_machine_id_command := "/bin/cp /dev/null /etc/machine-id"
+	kubectl_cleanup := "/bin/rm -rf /run/kubeadm/kubeadm-join-config.yaml"
+	command := []string{"/usr/bin/nsenter", "-m/proc/1/ns/mnt", "--", "/bin/sh", "-xc", sleepy + " && touch rock.txt &&" + cat_test + " && " + rm_command + " && " + replace_machine_id_command + " && " + kubectl_cleanup}
+	runAsUser := int64(0)
+	isTrue := true
+	pod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			GenerateName: "exec-pod-",
+		},
+		Spec: corev1.PodSpec{
+			NodeName:    node.Name,
+			HostNetwork: isTrue,
+			HostPID:     isTrue,
+			Containers: []corev1.Container{ // Node specific selector
+				{
+					Name:    "exec-container",
+					Command: command,
+					Image:   "ubuntu:latest",
+					SecurityContext: &corev1.SecurityContext{
+						RunAsUser:  &runAsUser, // Run as root user
+						Privileged: &isTrue,
+					},
+				},
+			},
+			NodeSelector: map[string]string{
+				"kubernetes.io/hostname": node.Name,
+			},
+			RestartPolicy: corev1.RestartPolicyNever,
+		},
+	}
+
+	createdPod, err := kubeClient.CoreV1().Pods("default").Create(ctx, pod, metav1.CreateOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	for createdPod.Status.Phase != corev1.PodSucceeded {
+		time.Sleep(time.Millisecond)
+	}
+
+	return nil
+}
+
 func (s *azureMachinePoolService) MachinePoolMachineScopeFromAmpm(ampm *infrav1exp.AzureMachinePoolMachine) *scope.MachinePoolMachineScope {
 	myscope, err := scope.NewMachinePoolMachineScope(scope.MachinePoolMachineScopeParams{
 		Client:                  s.scope.GetClient(),
