@@ -34,6 +34,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
 	kubedrain "k8s.io/kubectl/pkg/drain"
+	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	"sigs.k8s.io/cluster-api-provider-azure/azure"
 	"sigs.k8s.io/cluster-api-provider-azure/azure/scope"
 	"sigs.k8s.io/cluster-api-provider-azure/azure/services/resourceskus"
@@ -96,6 +97,8 @@ func (s *azureMachinePoolService) Reconcile(ctx context.Context) error {
 		}
 	}
 
+	//s.changeImage(ctx)
+
 	return nil
 }
 
@@ -152,6 +155,22 @@ func (s *azureMachinePoolService) MachinePoolMachineScopeFromAmpm(ampm *infrav1e
 	return myscope
 }
 
+func (s *azureMachinePoolService) changeImage(ctx context.Context) error {
+	amp := s.scope.AzureMachinePool
+	gallery_image := infrav1.AzureComputeGalleryImage{
+		SubscriptionID: to.Ptr(s.scope.ClusterScoper.SubscriptionID()),
+		ResourceGroup:  to.Ptr(s.scope.ClusterScoper.ResourceGroup()),
+		Gallery:        "GalleryInstantiation2",
+		Name:           "myGalleryImage2",
+		Version:        "1.0.7",
+	}
+	new_image := infrav1.Image{
+		ComputeGallery: &gallery_image,
+	}
+	amp.Spec.Template.Image = &new_image
+	return nil
+}
+
 func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 	//var c client.Client // How to avoid this, maybe config := os.Getenv("KUBECONFIG")
 
@@ -165,34 +184,6 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 	timestampDiff := "24h"
 
 	if timestampDiff == "24h" {
-		replicaCount := amp.Status.Replicas
-
-		healthyAmpm := &infrav1exp.AzureMachinePoolMachine{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: NameSpace,
-				Name:      "-1",
-			},
-		}
-
-		curInstanceID := strconv.Itoa(0)
-
-		for i := 0; i < int(replicaCount); i++ { // step 1
-			healthyAmpm = &infrav1exp.AzureMachinePoolMachine{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: NameSpace,
-					Name:      machinePoolName + "-" + strconv.Itoa(i),
-				},
-			}
-			curInstanceID = strconv.Itoa(i)
-
-			err := c.Get(ctx, client.ObjectKeyFromObject(healthyAmpm), healthyAmpm)
-			if err != nil {
-				return err
-			}
-		}
-
-		_ = curInstanceID
-		_ = healthyAmpm
 
 		subscriptionID := s.scope.ClusterScoper.SubscriptionID()
 		resourceGroup := s.scope.ClusterScoper.ResourceGroup()
@@ -202,13 +193,42 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		galleryLocation := s.scope.ClusterScoper.Location()
 		vmssName := machinePoolName
 
+		credConfig := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
+		authorizer, err := credConfig.Authorizer()
+		if err != nil {
+			return err
+		}
+
+		vmssClient := compute.NewVirtualMachineScaleSetsClient(subscriptionID)
+		vmssClient.Authorizer = authorizer
+
+		vmssVMsClient := compute.NewVirtualMachineScaleSetVMsClient(subscriptionID)
+		vmssVMsClient.Authorizer = authorizer
+
+		curInstanceID := strconv.Itoa(0)
+
+		healthyAmpm := &infrav1exp.AzureMachinePoolMachine{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: NameSpace,
+				Name:      machinePoolName + "-" + curInstanceID,
+			},
+		}
+
+		err = c.Get(ctx, client.ObjectKeyFromObject(healthyAmpm), healthyAmpm)
+		if err != nil {
+			return err
+		}
+
+		_ = curInstanceID
+		_ = healthyAmpm
+
 		myscope := s.MachinePoolMachineScopeFromAmpm(healthyAmpm)
 
 		if myscope == nil {
 			log.Fatalf("failed to construct machinepoolmachinescope")
 		}
 
-		err := myscope.CordonAndDrain(ctx)
+		err = myscope.CordonAndDrain(ctx)
 		if err != nil {
 			log.Fatalf("failed to drain: %v", err)
 		}
@@ -222,17 +242,6 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		_ = cred
 
 		fmt.Println(clientID) // FIX all os.Getenv references
-		credConfig := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
-		authorizer, err := credConfig.Authorizer()
-		if err != nil {
-			return err
-		}
-
-		vmssClient := compute.NewVirtualMachineScaleSetsClient(subscriptionID)
-		vmssClient.Authorizer = authorizer
-
-		vmssVMsClient := compute.NewVirtualMachineScaleSetVMsClient(subscriptionID)
-		vmssVMsClient.Authorizer = authorizer
 
 		vm, err := vmssVMsClient.Get(ctx, resourceGroup, vmssName, curInstanceID, "")
 		if err != nil {
