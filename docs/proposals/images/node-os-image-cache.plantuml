@@ -18,8 +18,8 @@ CreateComputeImageGalleryImage : Create a compute image gallery image from the s
 CreateComputeImageGalleryImage --> DeleteSnapshot
 
 DeleteSnapshot : Delete the snapshot
-DeleteSnapshot --> ConfigureAzureMachineTemplate
+DeleteSnapshot --> ConfigureAzureMachinePool
 
-ConfigureAzureMachineTemplate : Configure the AzureMachineTemplates to use the new Compute Image Gallery Image
+ConfigureAzureMachinePool : Configure the AzureMachinePool to use the new Compute Image Gallery Image
 
 @enduml
