@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
@@ -223,7 +222,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 
 	c := s.scope.GetClient()
 	amp := s.scope.AzureMachinePool
-	NameSpace := amp.Namespace
+	//NameSpace := amp.Namespace
 	machinePoolName := amp.Name
 	reconcilo := s.services
 
@@ -252,11 +251,24 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		vmssVMsClient := compute.NewVirtualMachineScaleSetVMsClient(subscriptionID)
 		vmssVMsClient.Authorizer = authorizer
 
-		curInstanceID := strconv.Itoa(0)
+		vmssVMs, err := vmssVMsClient.List(context.Background(), resourceGroup, vmssName, "", "", "")
+		if err != nil {
+			panic(err)
+		}
+		instanceIds := make([]string, 0)
+		for _, vm := range vmssVMs.Values() {
+			instanceIds = append(instanceIds, *vm.InstanceID)
+		}
+
+		if len(instanceIds) == 0 {
+			return nil // This means we shouldn't do anything/worry about this
+		}
+
+		curInstanceID := instanceIds[0] // else just choose first machines ID
 
 		healthyAmpm := &infrav1exp.AzureMachinePoolMachine{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace: NameSpace,
+				Namespace: "default",
 				Name:      machinePoolName + "-" + curInstanceID,
 			},
 		}
