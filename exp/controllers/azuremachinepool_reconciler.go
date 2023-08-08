@@ -175,7 +175,7 @@ func (s *azureMachinePoolService) cleanupCommands(ctx context.Context, node *cor
 		},
 	}
 
-	createdPod, err := kubeClient.CoreV1().Pods("default").Create(ctx, pod, metav1.CreateOptions{})
+	createdPod, err := kubeClient.CoreV1().Pods(node.Namespace).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
 		panic(err)
 	}
