@@ -314,7 +314,21 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		vm, err := vmssVMsClient.Get(ctx, resourceGroup, vmssName, curInstanceID, "")
 		if err != nil {
 			log.Fatalf("Failed to find VM")
+			return err
 		}
+		runCommandInput := compute.RunCommandInput{CommandID: to.Ptr("RunShellScript"),
+			Script: &[]string{"kubeadm reset -f"},
+		}
+
+		result, err := vmssVMsClient.RunCommand(ctx, vmssName, machinePoolName, curInstanceID, runCommandInput)
+		if err != nil {
+			log.Fatalf("failed to run command on VMSS VM %s in resource group %s: %v", curInstanceID, resourceGroup, err)
+			return err
+		}
+
+		_ = result
+		time.Sleep(60 * time.Second) // Bad solution, put polling here somehow with the VM, likely a way with result
+
 		osDisk := vm.StorageProfile.OsDisk.ManagedDisk.ID
 		fmt.Println("OS DISK: ", *osDisk)
 
