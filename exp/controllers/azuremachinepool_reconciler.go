@@ -222,7 +222,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 
 	c := s.scope.GetClient()
 	amp := s.scope.AzureMachinePool
-	//NameSpace := amp.Namespace
+	NameSpace := amp.Namespace
 	machinePoolName := amp.Name
 	reconcilo := s.services
 
@@ -268,7 +268,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 
 		healthyAmpm := &infrav1exp.AzureMachinePoolMachine{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace: "default",
+				Namespace: NameSpace,
 				Name:      machinePoolName + "-" + curInstanceID,
 			},
 		}
