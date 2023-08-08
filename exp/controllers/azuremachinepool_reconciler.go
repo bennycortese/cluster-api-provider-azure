@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
@@ -123,7 +124,7 @@ func (s *azureMachinePoolService) Snapshot(subscriptionID string, cred *azidenti
 		return errors.Wrapf(err, "Failed to create snapshot client")
 	}
 
-	_, err = snapshotFactory.BeginCreateOrUpdate(ctx, resourceGroup, snapshotName, armcompute.Snapshot{ // step 3
+	snapshotPoller, err := snapshotFactory.BeginCreateOrUpdate(ctx, resourceGroup, snapshotName, armcompute.Snapshot{ // step 3
 		Location: to.Ptr(location),
 		Properties: &armcompute.SnapshotProperties{
 			CreationData: &armcompute.CreationData{
@@ -133,6 +134,13 @@ func (s *azureMachinePoolService) Snapshot(subscriptionID string, cred *azidenti
 		},
 	}, nil)
 
+	if err != nil {
+		return errors.Wrapf(err, "Failed to start creating snapshot")
+	}
+
+	snapshotPollingInterval := 15 * time.Second
+
+	_, err = snapshotPoller.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{Frequency: snapshotPollingInterval})
 	if err != nil {
 		return errors.Wrapf(err, "Failed to create snapshot")
 	}
