@@ -233,6 +233,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 	NameSpace := amp.Namespace
 	machinePoolName := amp.Name
 	reconcilo := s.services
+	generalPollingInterval := 15 * time.Second
 
 	_ = reconcilo
 	timestampDiff := "24h"
@@ -395,7 +396,7 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 			return err
 		}
 
-		_, err = galleryImageFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", armcompute.GalleryImage{
+		galleryImagePoller, err := galleryImageFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", armcompute.GalleryImage{
 			Location: to.Ptr(galleryLocation),
 			Properties: &armcompute.GalleryImageProperties{
 				HyperVGeneration: to.Ptr(armcompute.HyperVGenerationV1),
@@ -415,12 +416,18 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 			return err
 		}
 
+		_, err = galleryImagePoller.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{Frequency: generalPollingInterval})
+		if err != nil {
+			log.Fatalf(err.Error())
+			return err
+		}
+
 		galleryImageVersionFactory, err := armcompute.NewGalleryImageVersionsClient(subscriptionID, cred, nil)
 		if err != nil {
 			return err
 		}
 
-		poller, err := galleryImageVersionFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", "1.0.0", armcompute.GalleryImageVersion{
+		pollerDef, err := galleryImageVersionFactory.BeginCreateOrUpdate(ctx, resourceGroup, galleryName, "myGalleryImage", "1.0.0", armcompute.GalleryImageVersion{
 			Location: to.Ptr(galleryLocation),
 			Properties: &armcompute.GalleryImageVersionProperties{
 				SafetyProfile: &armcompute.GalleryImageVersionSafetyProfile{
@@ -437,11 +444,22 @@ func (s *azureMachinePoolService) PrototypeProcess(ctx context.Context) error {
 		}, nil) // step 5
 
 		if err != nil {
+			log.Fatalf("failed to finish the request: %v", err)
 			return err
 		}
 
-		_ = poller
+		_, err = pollerDef.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{Frequency: generalPollingInterval})
+		if err != nil {
+			log.Fatalf("Something broke while updating imageVersionDefinition: %v", err)
+			return err
+		}
 	}
+
+	/*_ , error = snapshotFactory.BeginDelete(ctx, resourceGroupName, "example-snapshot", nil) // step 6
+
+	if error != nil {
+		log.Fatalf("failed to delete snapshot: %v", error)
+	}*/
 
 	return nil
 }
